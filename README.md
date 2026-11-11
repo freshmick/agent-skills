@@ -1,0 +1,11 @@
+# Agent skills
+
+Skills for coding agents that take work from an agreed design to merged PRs (Claude Code format: a folder with a `SKILL.md` and optional `references/`). Copy a folder into `~/.claude/skills/` for every project, or into a repo's `.claude/skills/` for that repo only.
+
+| Skill | What it does | Needs |
+|---|---|---|
+| `ship-wave` | Leads a batch of issues to merged PRs: one sub-agent per issue in its own worktree, draft PRs, pr-gate on each, merge in dependency order, tracker updates, one digest for the person. | `pr-gate` |
+
+`pr-gate` lives in [agent-guardrails](https://github.com/freshmick/agent-guardrails) under `skills/pr-gate`.
+
+To update a skill on claude.ai: zip the skill folder (folder at the zip root, no `__pycache__`), then Customize > Skills > the skill > More options > Replace.
