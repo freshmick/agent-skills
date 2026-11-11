@@ -25,6 +25,7 @@ With no profile and repeat waves likely, offer to save one.
 ## 2. Plan
 - Order by blocking links and code dependencies; parallelize the rest, but serialize issues likely to touch the same files (shared styles, layouts, config, lockfiles).
 - Batch same-class low-tier issues (docs, tests, wording) into one PR per wave. Everything else stays one issue, one PR. Split an issue only when it mixes a contract or sensitive change with ordinary code: that part gets its own PR. Before opening any PR, `gh pr list --search "<issue id>"` for one that already exists.
+- An issue over about 300 lines outside generated files (goldens, lockfiles, snapshots), or one that works only once several layers change together, is not a slice. Don't slice it here: hold that issue, tell the user why and point them to `slice-work`. Start the others.
 - Run pr-gate's floor script over the files each issue will likely touch (`python3 <pr-gate dir>/references/floor.py --risk-paths .claude/risk-paths.md --files <planned paths>`, no diff). If an issue floors at high or needs an ADR, write a one-page proposal for it (plan-mode output is the format: what changes, which contract, architecture or sensitive paths, the options and a recommendation) and wait for the user's approval of that issue. Start the others right away.
 - Tell the user the plan in a few lines, including which issues wait for a proposal.
 
