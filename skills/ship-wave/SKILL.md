@@ -26,7 +26,7 @@ With no profile and repeat waves likely, offer to save one.
 - Order by blocking links and code dependencies; parallelize the rest, but serialize issues likely to touch the same files (shared styles, layouts, config, lockfiles).
 - Batch same-class low-tier issues (docs, tests, wording) into one PR per wave. Everything else stays one issue, one PR. Split an issue only when it mixes a contract or sensitive change with ordinary code: that part gets its own PR. Before opening any PR, `gh pr list --search "<issue id>"` for one that already exists.
 - An issue over about 300 lines outside generated files (goldens, lockfiles, snapshots), or one that works only once several layers change together, is not a slice. Don't slice it here: hold that issue, tell the user why and point them to `slice-work`. Start the others.
-- Run pr-gate's floor script over the files each issue will likely touch (`python3 <pr-gate dir>/references/floor.py --risk-paths .claude/risk-paths.md --files <planned paths>`, no diff). If an issue floors at high or needs an ADR, write a one-page proposal for it (plan-mode output is the format: what changes, which contract, architecture or sensitive paths, the options and a recommendation) and wait for the user's approval of that issue. Start the others right away.
+- Work out each issue's floor the way pr-gate's step 1 does, over the files it will likely touch: the repo's `.claude/risk-paths.md`, else pr-gate's `references/risk-paths-template.md`. If an issue floors at high or needs an ADR, write a one-page proposal for it (plan-mode output is the format: what changes, which contract, architecture or sensitive paths, the options and a recommendation) and wait for the user's approval of that issue. Start the others right away.
 - Tell the user the plan in a few lines, including which issues wait for a proposal.
 
 ## 3. Implement (one sub-agent per issue)
@@ -40,7 +40,7 @@ With no profile and repeat waves likely, offer to save one.
 - PR body: closing keyword ("Fixes ABC-N"; "Part of" if partial), what changed, how each claim was verified (file:line or test), **Needs human**, follow-ups, check results.
 
 ## 4. Gate
-- Once CI is green, run the `pr-gate` skill on the PR. It is the only review layer: it collects the evidence (checks, screenshots), runs the fresh-context and security reviews, posts look-here comments, sets the `risk:low|medium|high` label from the repo's `.claude/risk-paths.md` and its floor script, and posts the gate comment. Blocking findings go back to the implementer, who fixes or rebuts each on its thread; the gate's three-round cap applies.
+- Once CI is green, run the `pr-gate` skill on the PR. It is the only review layer: it collects the evidence (checks, screenshots), runs the fresh-context and security reviews, posts look-here comments, sets the `risk:low|medium|high` label from the sensitive paths, and posts the gate comment. A PR it sends back as not one slice goes back to `slice-work`, not to more commits. Blocking findings go back to the implementer, who fixes or rebuts each on its thread; the gate's three-round cap applies.
 - Gate a stacked PR on its own commits, and re-gate it if a rebase changes its diff.
 - When the gate passes, `gh pr ready N`. A PR stays a draft until then.
 - Unresolved design disagreements go to the user.
