@@ -5,7 +5,7 @@ Skills for coding agents that take work from an agreed design to merged PRs (Cla
 | Skill | What it does | Needs |
 |---|---|---|
 | `ship-wave` | Leads a batch of issues to merged PRs: one sub-agent per issue in its own worktree, draft PRs, pr-gate on each, at most 3 PRs waiting on the person at once, merge in dependency order, tracker updates, one digest for the person. A new repo starts with a walking skeleton, untested code gets a pin test first, and a ledger file lets a long run survive context compaction. | `pr-gate` |
-| `pr-gate` | Verifies a PR and sends it down one of two lanes: the agent lane (the agent merges) or the person's lane (you merge, from 1-3 look-here points). Sends back a PR that is not one vertical slice; collects evidence and runs a fresh-context review (none for docs or tests only), plus a security review and `/code-review high` only on sensitive paths. The repo's `.claude/risk-paths.md` (or the default list in `references/`) sets the paths and the repo's lane setting: `lane: mvp` lets the agent merge everything except sensitive paths and one-way doors; `lane: live`, the default, only docs, tests and regenerated files. Reviews report blocking findings only, and agents file no issues. | `gh` |
+| `pr-gate` | Verifies a PR and sends it down one of two lanes: the agent lane (the agent merges) or the person's lane (you merge, from 1-3 look-here points). Sends back a PR that is not one vertical slice; collects evidence and runs one review pass: no reviewer for docs or tests only, one fresh-context reviewer for an ordinary change, two (the second with the security lens) on sensitive paths. The repo's `.claude/risk-paths.md` (or the default list in `references/`) sets the paths and the repo's lane setting: `lane: mvp` lets the agent merge everything except sensitive paths and one-way doors; `lane: live`, the default, only docs, tests and regenerated files. Reviews report blocking findings only, and agents file no issues. | `gh` |
 
 **From [mattpocock/skills](https://github.com/mattpocock/skills)** (MIT, copied unchanged, see [CREDITS.md](CREDITS.md)). Run `/setup-matt-pocock-skills` once per repo first: it records the tracker and labels the others use.
 
@@ -40,7 +40,7 @@ flowchart TD
     F -->|your lane| H[You: read the gate comment<br/>decide the 1-3 look-here points, merge]
     G --> I[Wave digest]
     H --> I
-    I -->|left out, recurring findings, questions| A
+    I -->|left out, questions, recurring findings (a check first, prose last)| A
 ```
 
 - **`/guardrails`** first on an existing repo, so checks and the risk paths are in place before agents change code. A new repo runs it once the walking skeleton has merged.
