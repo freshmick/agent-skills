@@ -40,7 +40,7 @@ flowchart TD
     F -->|your lane| H[You: read the gate comment<br/>decide the 1-3 look-here points, merge]
     G --> I[Wave digest]
     H --> I
-    I -->|left out, recurring findings, questions| A
+    I -->|left out, questions, recurring findings as a new check first, a CLAUDE.md line only when no check can express it| A
 ```
 
 - **`/guardrails`** first on an existing repo, so checks and the risk paths are in place before agents change code. A new repo runs it once the walking skeleton has merged.
