@@ -56,7 +56,7 @@ Nothing else: no style, naming or structure remarks, no "consider handling", no 
 
 **Keep the PR the size it was.** A finding that isn't blocking by the list above is dropped: not a commit, not an issue, not a line in the gate comment.
 
-**Verify before posting.** Each finding comes with its failure scenario; run it yourself in the PR worktree (the input, the request, the test) before it goes on the PR. A finding you can't reproduce is dropped, not posted as "possible". Then post the survivors as review comments. Each must be fixed (with a test) or answered with a reason before the gate passes. Re-review only the changed lines. Never re-raise a finding already answered with a reason on its thread; if the reason is wrong, reply on that thread. After three rounds, stop and take the open point to the user.
+**Verify before posting.** Each finding comes with its failure scenario; run it yourself in the PR worktree (the input, the request, the test) before it goes on the PR. A finding with nothing to run (a committed secret, a missing authorization check, a missing test) is confirmed by reading the lines it names. A finding you can't reproduce is dropped, not posted as "possible". Then post the survivors as review comments. Each must be fixed (with a test) or answered with a reason before the gate passes. Re-review only the changed lines. Never re-raise a finding already answered with a reason on its thread; if the reason is wrong, reply on that thread. After three rounds, stop and take the open point to the user.
 
 ## 4. Security review
 High tier only (step 3). Run `/security-review` (the built-in skill) in the PR worktree against the PR's base. Any open finding blocks. Record "security review: no findings" or the finding and how it was resolved.
