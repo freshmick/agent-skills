@@ -50,7 +50,7 @@ With no profile and repeat waves likely, offer to save one.
 - Only with green CI (or recorded checks), all threads resolved and a pr-gate label, in dependency order, by the repo's convention (default `gh pr merge --squash --delete-branch`). Rebase dependents after each merge.
 - **Who merges is set by the tier:** you merge `risk:low` only. `risk:medium` and `risk:high` go to the user with the gate comment's "For you to look at". Never bypass branch rules (`--admin`). If the rules need an approval the agents can't give, hand low PRs over too, marked "no review needed".
 - Before merging a PR that triggers a production deploy or carries a migration or feature flag, run `deploy-checklist` for it and put the rollback triggers in the PR. Watch triggered deploys; if one fails or trips a rollback trigger, stop merging that repo, report severity, impact and status in a few lines, and leave rollback to the user unless the profile allows it.
-- Don't merge DO NOT MERGE or human-gated PRs, whatever their tier. A `needs-visual-review` PR (any visible UI or public content change) is at least medium, unless the gate finds that only wording changed. Hand it to the user with the gate's screenshots and how to preview locally.
+- Don't merge DO NOT MERGE or human-gated PRs, whatever their tier. A `needs-visual-review` PR (any visible UI or public content change) is at least medium, unless the gate finds that only wording changed. pr-gate checks its screens; hand it over with the gate's findings, never with screenshots for the user to judge.
 
 ## 6. Tracker
 - Issues go to In Progress at start and Done on merge (unless automation does it), with a comment linking the PR.
