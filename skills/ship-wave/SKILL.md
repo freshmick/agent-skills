@@ -43,7 +43,7 @@ With no `.claude/ship-wave.md` and repeat waves likely, offer to write one. With
 - PR body: the `pr` skill's template, short enough to read in a minute. The closing keyword comes first ("Fixes ABC-N"; "Part of" if partial). Evidence is the one command or test that proves the criterion; the gate comment carries the check logs and screenshots. The Door line is `two-way` (a revert undoes it) or `one-way` (a migration, a deleted field, an external call), with the reason. No "Needs human" section: review is what a PR is for.
 
 ## 4. Gate and merge
-- Once CI is green, run the `pr-gate` skill on the PR. It is the only review layer and the only merger: it collects the evidence, runs the reviews the paths call for, picks the lane, posts the look-here comments and the gate comment, merges agent-lane PRs, and rebases the dependants after a merge. You never merge, rebase or re-gate by hand.
+- Run the `pr-gate` skill on each PR as soon as its implementer reports it. It is the only review layer and the only merger: it collects the evidence, runs the reviews the paths call for, picks the lane, posts the look-here comments and the gate comment, merges agent-lane PRs, and rebases the dependants after a merge. You never merge, rebase or re-gate by hand.
 - Gate in dependency order, so merges land in it. A stacked PR is gated on its own commits; pr-gate re-gates it if a rebase changes its diff.
 - A PR the gate sends back as not one slice goes back to `to-tickets`, not to more commits. Blocking findings, and a red run after a rebase, go back to the implementer with what the gate reports; the implementer fixes or rebuts each finding on its thread, and the gate's three-round cap applies.
 - When the gate passes, `gh pr ready N`. A PR stays a draft until then.

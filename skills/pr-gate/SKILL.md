@@ -34,7 +34,7 @@ The core rules:
 
 ## 2. Collect evidence
 Work in a worktree at the PR head, never the main checkout.
-- **GitHub checks:** `gh pr checks N`. Every required check must be green, and any pending check blocks.
+- **GitHub checks:** `gh pr checks N`. A red check is a blocking finding. Pending checks don't hold up the review; the merge waits for CI (step 6). With no CI, the local checks below are the evidence.
 - **Local checks:** run the repo's check commands (lint, format, tests, type check, API/schema drift). Record each command, its exit code and a one-line result ("961 passed"). Re-run a failure on its own before calling it real (parallel suites time out).
 - **Screens:** for any change a user can see, start the app on a free port (respect the repo's forbidden ports). Use Playwright to screenshot each changed screen: before (base) and after (head) when the change is visual, and after only for new screens. Use phone width too if the change mentions phones or layout. Publish the images so the user can open them from the PR, in this order of preference:
   - a private evidence page (the Artifact tool, if available): one page per PR or per batch, with before/after side by side and a line on what to judge in each; link it from the gate comment;
