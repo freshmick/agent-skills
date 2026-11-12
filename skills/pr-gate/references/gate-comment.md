@@ -1,34 +1,17 @@
 # Gate comment template
 
-Write it in plain words for a reader who is not a programmer. Keep it short: what changed, how sure we are, and what to look at.
+Plain words, for a reader who is not a programmer. Short: a small change gets a few lines, never a page. One line per field; leave a field out when it has nothing to say.
 
 ```markdown
 <!-- pr-gate -->
-## Risk: **<low | medium | high>**
+**Risk: <low | medium | high>** (head <short sha>)
 
-**Why this tier:** <one or two sentences: what the change touches; which risk-path rule set the floor, or why it was raised>
-
-**Floor:** <tier>, from <`.claude/risk-paths.md` / the skill's default list>; needs ADR <yes / no>; CI weakened <no findings / n findings, listed under "For you to look at">
-
-**Follow-ups filed:** <issue links for review findings outside this PR's scope, or "none">
-
-**Evidence** (head <short sha>)
-| Check | Result |
-|---|---|
-| GitHub checks | <all green: names> |
-| `<command>` | exit 0 - <961 passed> |
-| ... | ... |
-| Fresh-context review | <n blocking (all fixed / answered), n nits> |
-| Security review | <no findings / finding + resolution> |
-| Screens | <what you checked on each changed screen and what you found, with links to the screenshots, or "no visible change"> |
-
-**What the checks would miss:** <the honest gap: e.g. "how the new layout feels on a real phone", "whether 30 % is the right engineering limit">
-
-**How to revert:** <e.g. "revert the squash commit; no stored data changes" or the extra step if data/config changed>
-
-**For you to look at:** <medium: the 1-3 product decisions only a person can make, or "nothing to judge, ready to merge"; never a screen to check; high: the review summary and the one decision only a person can make; low: "nothing: the agent merges this">. <medium and high: the look-here permalinks, one per line, matching the `## Look here` section at the top of the PR body>
-
-**Stacked on:** <#parent, or "none">
-
-**Gate ran as:** <`<machine user>` (verified) / the user's own account (AGENT_GITHUB_LOGIN not set) / mismatch: <detail>>. <on a GitHub Free private repo add: "GitHub does not enforce these tiers here; this gate does.">
+**Why:** <one sentence: what the change touches and which rule set the tier>
+**Checks:** <GitHub checks green; `pytest` 81 passed; pre-commit clean>
+**Reviews:** <fresh-context: n blocking, fixed; security: no findings; /code-review high: ...>
+**Misses:** <the honest gap the checks don't cover, one line>
+**Revert:** <"revert the squash commit", or the extra step>
+**Follow-ups:** <issue links, if any>
+**Look at:** <medium/high: the 1-3 decisions with permalinks, or "nothing to decide"; low: omit>
+<only when true: "CI weakened: file:line ..." / "needs ADR" / "stacked on #M" / identity mismatch / "GitHub does not enforce these tiers here">
 ```
