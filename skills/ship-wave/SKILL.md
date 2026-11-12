@@ -37,7 +37,7 @@ With no profile and repeat waves likely, offer to save one.
 - Update docs the change makes stale (README, runbook, API docs): link, don't duplicate.
 - Migrations: next free number, additive only.
 - One commit per concern inside the PR (behaviour, tests, docs, generated files, formatting) so it reads commit by commit. Generated files are marked `linguist-generated=true` in `.gitattributes` so GitHub collapses them.
-- PR body: closing keyword ("Fixes ABC-N"; "Part of" if partial), what changed, how each claim was verified (file:line or test), **Needs human**, follow-ups, check results.
+- PR body: short enough to read in a minute. Closing keyword ("Fixes ABC-N"; "Part of" if partial), then a few bullets on what changed and why, and follow-up issue links. No "Needs human" section (review is what a PR is for) and no check logs (the gate comment carries the evidence).
 
 ## 4. Gate
 - Once CI is green, run the `pr-gate` skill on the PR. It is the only review layer: it collects the evidence (checks, screenshots), runs the fresh-context and security reviews, posts look-here comments, sets the `risk:low|medium|high` label from the sensitive paths, and posts the gate comment. A PR it sends back as not one slice goes back to `slice-work`, not to more commits. Blocking findings go back to the implementer, who fixes or rebuts each on its thread; the gate's three-round cap applies.
@@ -54,7 +54,7 @@ With no profile and repeat waves likely, offer to save one.
 
 ## 6. Tracker
 - Issues go to In Progress at start and Done on merge (unless automation does it), with a comment linking the PR.
-- Follow-ups: one backlog issue each in the tracker only (no code TODOs), labelled per the rules, linked to the source, deduplicated. Tag debt follow-ups with a category (code, architecture, test, dependency, documentation, infrastructure) and score them (Impact + Risk) × (6 − Effort) to set priority where the tracker has one. If a create is refused, report it; don't retry. No tracker: list them in the report.
+- Follow-ups: a review finding becomes an issue only when it would break a normal repo for a real user; anything else gets one line in the gate comment and nothing more. Each issue goes in the tracker only (no code TODOs), labelled per the rules, linked to the source, deduplicated. Tag debt follow-ups with a category (code, architecture, test, dependency, documentation, infrastructure) and score them (Impact + Risk) × (6 − Effort) to set priority where the tracker has one. If a create is refused, report it; don't retry. No tracker: list them in the report.
 
 ## 7. Wave digest
 The digest is the only thing the user has to read. PRs grouped by tier, highest first; per PR one line: number, title, what to judge, links to the gate comment and its evidence. Low PRs the agent merged get a line each with nothing to judge. Then: merged and reverted counts per tier (pr-gate's step 7) · Actions minutes the wave used, summed from each run's `gh api repos/{owner}/{repo}/actions/runs/<id>/timing` when available · what's open and why · what needs the user (human-gated steps, then questions, then decisions) · follow-ups filed · whether the parent can close.

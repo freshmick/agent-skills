@@ -50,12 +50,14 @@ Spawn a reviewer subagent that didn't write the code and hasn't seen your reason
 
 For tier high, run `/code-review high <PR>` (via the code-review skill) as well. Never launch `/code-review ultra` yourself: it is costly and user-triggered.
 
-**Keep the PR the size it was.** A finding is blocking only when it breaks the issue's acceptance criteria or is a bug in the lines this PR changed. A new case, input or behaviour the issue didn't ask for is a follow-up: file it as an issue and link it in the gate comment; it never becomes a commit on this PR.
+**Small PRs** (under about 50 changed lines outside generated files): this review is the only one, whatever the tier. No `/code-review high` and no separate `/security-review` (step 4); the reviewer's list above already covers security.
+
+**Keep the PR the size it was.** A finding is blocking only when it breaks the issue's acceptance criteria or is a bug in the lines this PR changed. Anything else never becomes a commit on this PR. File it as an issue only when it would break a normal repo for a real user; otherwise give it one line under Follow-ups in the gate comment and nothing more.
 
 Post blocking findings on the PR as review comments. Each must be fixed (with a test) or answered with a reason before the gate passes. Re-review only the changed lines. After three rounds, stop and take the open point to the user.
 
 ## 4. Security review
-Run `/security-review` (the built-in skill) in the PR worktree against the PR's base. Any open finding blocks, whatever the tier. Record "security review: no findings" or the finding and how it was resolved.
+Skip for small PRs (step 3). Otherwise run `/security-review` (the built-in skill) in the PR worktree against the PR's base. Any open finding blocks, whatever the tier. Record "security review: no findings" or the finding and how it was resolved.
 
 ## 5. Set the tier
 Start at the floor (step 1), then raise it if judgement says so:
@@ -80,6 +82,7 @@ When in doubt, go up one tier: a wrong "medium" costs the user a minute, and a w
 ## 6. Label, comment, merge
 - Set exactly one label: remove other `risk:*` labels and add the new one.
 - Post **one** gate comment using [references/gate-comment.md](references/gate-comment.md). On a re-run, edit your earlier gate comment instead of adding a new one (find it by its first line `<!-- pr-gate -->`).
+- **No re-gate** after a clean merge of the base into the PR that leaves the PR's own diff unchanged; the earlier gate stands once CI is green again.
 - **low:** if checks, review and security review are clean and no thread is open, merge by the repo's convention (`gh pr merge N --squash --delete-branch` or `--rebase`; never `--admin`). Then rebase each stacked dependant: `git rebase --onto origin/<default> origin/<parent-branch> <branch>`, `git push --force-with-lease`, and re-run its gate if its diff changed. If `main`'s rules need an approval the agent can't give, don't bypass them. Tell the user "low risk, ready, no review needed: just merge".
 - **medium / high:** don't merge. Post one review comment at each of the one to three decision points: `gh api repos/{owner}/{repo}/pulls/N/comments -f commit_id=<head sha> -f path=<file> -F line=<n> -f body=...`, body starting `<!-- pr-gate look-here -->` and saying in one or two sentences what to judge there. Then put a `## Look here` section at the top of the PR body listing those points with permalinks (`https://github.com/{owner}/{repo}/blob/<head sha>/<path>#L<a>-L<b>`). On a re-run replace that section and delete your stale look-here comments. More than three points means the PR is too big: say so and suggest the cut instead of listing them all. Tell the user in plain words that the PR is ready, which tier, and the 1-3 things to look at, with links (the review summary, and for high the decision only a person can make). Look-here points are decisions, never "check this screen".
 - **Reverted:** when a merged PR is undone (a revert PR merges, or its squash commit is reverted on `main`), add the `reverted` label to the original PR so the counts in step 7 stay honest.
