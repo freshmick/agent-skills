@@ -6,7 +6,7 @@ Skills for coding agents that take work from an agreed design to merged PRs (Cla
 |---|---|---|
 | `slice-work` | Turns an agreed design into vertical slices, one issue each: end to end, about 200 hand-written lines across at most 8 files, with the files and the test named, never one layer at a time. Shows the plan, creates the issues after the person's ok, hands the ids to `ship-wave`. | a tracker |
 | `ship-wave` | Leads a batch of issues to merged PRs: one sub-agent per issue in its own worktree, draft PRs, pr-gate on each, at most 3 PRs waiting on the person at once, merge in dependency order, tracker updates, one digest for the person. | `pr-gate` |
-| `pr-gate` | Verifies a PR and gives it a risk tier. Sends back a PR that is not one vertical slice; collects evidence, runs a fresh-context review and a security review, sets the floor from the repo's `.claude/risk-paths.md` (or the default list in `references/`), labels the PR, posts one gate comment and merges only low-tier PRs itself. Review depth follows the tier; reviews report blocking findings only, and agents file no issues. | `gh` |
+| `pr-gate` | Verifies a PR and sends it down one of two lanes: the agent lane (the agent merges) or the person's lane (you merge, from 1-3 look-here points). Sends back a PR that is not one vertical slice; collects evidence and runs a fresh-context review, plus a security review and `/code-review high` only on sensitive paths. The repo's `.claude/risk-paths.md` (or the default list in `references/`) sets the paths and the repo's lane setting: `lane: mvp` lets the agent merge everything except sensitive paths and one-way doors; `lane: live`, the default, only docs, tests and regenerated files. Reviews report blocking findings only, and agents file no issues. | `gh` |
 
 **From [mattpocock/skills](https://github.com/mattpocock/skills)** (MIT, copied unchanged, see [CREDITS.md](CREDITS.md)). Run `/setup-matt-pocock-skills` once per repo first: it records the tracker and labels the others use.
 
@@ -35,8 +35,8 @@ flowchart TD
     E --> F["/pr-gate (run by ship-wave)"]
     F -->|not one slice| B
     F -->|blocking findings, max 3 rounds| E
-    F -->|risk:low| G[Agent merges]
-    F -->|risk:medium / high| H[You: read the gate comment<br/>decide the 1-3 look-here points, merge]
+    F -->|agent lane| G[Agent merges]
+    F -->|your lane| H[You: read the gate comment<br/>decide the 1-3 look-here points, merge]
     G --> I[Wave digest]
     H --> I
     I -->|left out, recurring findings, questions| A
@@ -46,6 +46,6 @@ flowchart TD
 - **`/slice-work`** when the design is agreed and implementation is next. Run it again when ship-wave or pr-gate sends an issue back as too big or not a slice.
 - **`/ship-wave`** with the issue ids slice-work printed. It runs pr-gate itself; you don't call pr-gate during a wave.
 - **`/pr-gate`** on its own only for a PR that didn't come from a wave: a hand-written PR, or one from another tool.
-- **You** read the digest and the gate comments of medium and high PRs. Not the diffs: the gate's look-here points are the decisions, and the evidence section says what was run and seen.
+- **You** read the digest and the gate comments of PRs in your lane. Not the diffs: the gate's look-here points are the decisions, and the evidence section says what was run and seen.
 
 To update a skill on claude.ai: zip the skill folder (folder at the zip root, no `__pycache__`), then Customize > Skills > the skill > More options > Replace.
