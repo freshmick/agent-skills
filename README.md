@@ -11,15 +11,21 @@ Each skill is a folder with a `SKILL.md`. Copy a folder to where you want it:
 - `~/.claude/skills/` to have it in every project
 - `<repo>/.claude/skills/` to have it in one repo
 
-`ship-wave` needs `pr-gate` next to it, and `pr-gate` needs the GitHub CLI (`gh`). Then run `/setup-matt-pocock-skills` once in each repo. It asks which tracker you use and which labels, and the other skills read that.
+`ship-wave` needs `pr-gate` and `pr` next to it, and `pr-gate` needs the GitHub CLI (`gh`). If the engineering plugin is installed, `ship-wave` also uses its `debug` and `deploy-checklist` skills. Then run `/setup-matt-pocock-skills` once in each repo. It asks which tracker you use, and the other skills read that.
+
+The gate sends back any PR over about 200 hand-written lines or 8 files. To set another cap, put one line in the repo's `CLAUDE.md`, for example `Slice cap: 300 lines, 10 files.` `to-tickets`, `ship-wave` and `pr-gate` all read it.
 
 ## How a piece of work flows
 
 ```mermaid
 flowchart TD
-    A["/grill-me<br/>settle the design"] --> B["/to-tickets<br/>cut it into small issues"]
+    X[Existing repo] --> G0["/guardrails<br/>checks, sensitive paths, baseline"]
+    G0 --> A
+    N[New repo] --> A["/grill-me<br/>settle the design"]
+    A --> S["/to-spec<br/>write the design down as an issue"]
+    S --> B["/to-tickets<br/>cut it into small issues"]
     B --> C["/ship-wave<br/>agents build each issue as a PR"]
-    C --> D["/pr-gate<br/>checks each PR, picks a lane"]
+    C --> D["/pr-gate<br/>checks each PR, picks a lane, merges the agent lane"]
     D -->|agent lane| E[Agent merges]
     D -->|your lane| F[You read 1-3 points, merge]
     E --> G[Digest]
@@ -29,13 +35,15 @@ flowchart TD
 
 **1. Settle the design with `/grill-me`.** It interviews you about what you want to build until the open questions are gone. Stop when you can say what a user will be able to do afterwards and how a test would prove it. `/grill-with-docs` does the same and also writes decision records and a glossary.
 
-**2. Cut it into issues with `/to-tickets`.** Each issue is one vertical slice: a small change that works end to end, not "the database part" and then "the UI part". Issues say which other issues they block. In a brand new repo the first issue is a walking skeleton, the smallest thing that builds, runs one path and passes CI.
+**2. Write it down with `/to-spec`.** It turns the conversation into a spec issue on your tracker, with no further interview. Every later agent works from issues, not from this chat, so the design has to leave the chat.
 
-**3. Run `/ship-wave` with the issue ids.** One agent per issue, each in its own git worktree, each producing a draft PR. On code with no tests, the agent writes a test that pins the current behaviour before changing anything. Ship-wave keeps the tracker up to date, merges in dependency order, and never has more than three PRs waiting on you at once. When it's done you get one digest: what merged, what's open, what needs you, and anything that got left out.
+**3. Cut it into issues with `/to-tickets`.** Each issue is a sub-issue of the spec and one vertical slice: a small change that works end to end, not "the database part" and then "the UI part". Issues say which other issues they block. In a brand new repo the first issue is a walking skeleton, the smallest thing that builds, runs one path and passes CI.
 
-**4. Every PR goes through `/pr-gate`.** Ship-wave runs this itself. The gate sends back a PR that isn't one slice, collects the evidence (check results, screenshots of changed screens), and runs a fresh-context review. Then it picks a lane:
+**4. Run `/ship-wave` with the issue ids.** One agent per issue, each in its own git worktree, each producing a draft PR. On code with no tests, the agent writes a test that pins the current behaviour before changing anything. Ship-wave keeps the tracker up to date, merges in dependency order, and never has more than three PRs waiting on you at once. When it's done you get one digest: what merged, what's open, what needs you, and anything that got left out.
 
-- **Agent lane:** the agent merges.
+**5. Every PR goes through `/pr-gate`.** Ship-wave runs this itself. The gate sends back a PR that isn't one slice, collects the evidence (check results, screenshots of changed screens), and runs a fresh-context review that reports only bugs, missed criteria and security holes. Then it picks a lane:
+
+- **Agent lane:** the gate merges, and rebases anything stacked on top.
 - **Your lane:** you merge. The gate posts one to three "look here" comments on the lines where a human has to decide something, and says in plain words why the PR is in your lane.
 
 Which PRs land in which lane is set per repo in `.claude/risk-paths.md`:
@@ -85,7 +93,7 @@ What each section does:
 
 Start by copying the template and replacing the example globs under `sensitive` with your repo's real paths. If you use [agent-guardrails](https://github.com/freshmick/agent-guardrails), `/guardrails` writes a first version for you.
 
-**5. Read the digest and the "look here" comments in your lane.** The look-here points are the decisions. The gate comment's evidence section says what was run and what was seen.
+**6. Read the digest and the "look here" comments in your lane.** The look-here points are the decisions. The gate comment's evidence section says what was run and what was seen.
 
 Run `/pr-gate` on its own only for a PR that didn't come from a wave: one you wrote by hand, or one from another tool.
 
@@ -93,8 +101,8 @@ Run `/pr-gate` on its own only for a PR that didn't come from a wave: one you wr
 
 | Skill | What it does |
 |---|---|
-| `ship-wave` | Leads a batch of issues to merged PRs. One sub-agent per issue, draft PRs, pr-gate on each, merge in dependency order, tracker updates, one digest at the end. |
-| `pr-gate` | Verifies a PR and picks its lane. Collects evidence, runs the review, labels the PR, posts one gate comment and the look-here points. |
+| `ship-wave` | Leads a batch of issues to merged PRs. One sub-agent per issue, draft PRs, pr-gate on each in dependency order, tracker updates, one digest at the end. |
+| `pr-gate` | Verifies a PR, picks its lane and merges the agent lane. Collects evidence, runs the review, labels the PR, posts one gate comment and the look-here points, rebases what's stacked on a merged PR. |
 
 ## Skills from Matt Pocock
 
@@ -104,17 +112,18 @@ Copied unchanged from [mattpocock/skills](https://github.com/mattpocock/skills) 
 |---|---|
 | `grill-me` | Being interviewed about a plan until it's settled. |
 | `grill-with-docs` | Same, plus decision records (ADRs) and a glossary. |
-| `to-tickets` | Cutting an agreed design into issues for `ship-wave`. |
+| `to-spec` | Writing the settled design down as a spec issue, no interview. |
+| `to-tickets` | Cutting a spec into issues for `ship-wave`. |
 | `prototype` | A throwaway prototype to settle a UI or state question. |
 | `improve-codebase-architecture` | Finding the worst tangles in a messy codebase. |
 | `wayfinder` | Work too big for one session, laid out as a map of decision tickets. |
 | `setup-matt-pocock-skills` | The one-time setup per repo: tracker and labels. |
 
-`grilling`, `domain-modeling`, `codebase-design` and `research` are helpers the skills above call. You don't run them yourself.
+`grilling`, `domain-modeling`, `codebase-design`, `research` and `pr` (the PR body template `ship-wave` uses) are helpers the skills above call. You don't run them yourself.
 
 ## Related
 
-**Existing repo?** Run [`/guardrails`](https://github.com/freshmick/agent-guardrails) first. It sets up checks, the sensitive-paths list and a baseline so agents don't change code in a repo with no safety net. In a new repo, run it once the walking skeleton has merged.
+**Existing repo?** Run [`/guardrails`](https://github.com/freshmick/agent-guardrails) before anything else: the gate's sensitive paths come from it. It sets up checks, the sensitive-paths list and a baseline so agents don't change code in a repo with no safety net. In a new repo, run it once the walking skeleton has merged.
 
 ## Using the skills on claude.ai
 

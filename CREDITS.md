@@ -17,6 +17,8 @@ These skills are copied unchanged from [mattpocock/skills](https://github.com/ma
 | `codebase-design` | `skills/engineering/codebase-design` |
 | `wayfinder` | `skills/engineering/wayfinder` |
 | `research` | `skills/engineering/research` |
+| `to-spec` | `skills/engineering/to-spec` |
+| `pr` | `skills/engineering/pr` (its own CREDITS.md names Dex Horthy's `show-me`) |
 
 To update: clone the upstream repo, copy the same folders over these, and change the commit above.
 
