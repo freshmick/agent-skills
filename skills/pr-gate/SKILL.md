@@ -1,6 +1,6 @@
 ---
 name: pr-gate
-description: Verify a pull request and give it a risk tier (low, medium, high) before anyone merges it. Sends back a PR that is not one vertical slice, collects evidence (checks with exit codes, screenshots of changed screens), runs a fresh-context review and a security review, sets the tier from the repo's sensitive paths, labels the PR risk:low/medium/high and posts one gate comment. The agent merges low-risk PRs itself; medium and high go to the user with the evidence. Use whenever a PR is about to be handed over or merged, when the user says "/pr-gate", "gate this PR", "classify this PR", "is this PR safe to merge", or when /ship-wave reaches its gate or merge step.
+description: Verify a pull request and give it a risk tier (low, medium, high) before anyone merges it. Sends back a PR that is not one vertical slice, collects evidence (checks with exit codes), checks every changed screen itself from screenshots, runs a fresh-context review and a security review, sets the tier from the repo's sensitive paths, labels the PR risk:low/medium/high and posts one gate comment. The agent merges low-risk PRs itself; medium and high go to the user with the evidence. Use whenever a PR is about to be handed over or merged, when the user says "/pr-gate", "gate this PR", "classify this PR", "is this PR safe to merge", or when /ship-wave reaches its gate or merge step.
 argument-hint: "[PR numbers or URLs; default: the current branch's PR]"
 ---
 
@@ -39,6 +39,7 @@ Work in a worktree at the PR head, never the main checkout.
   - else the evidence branch `pr-evidence` (an orphan branch that never merges; folder `pr-<N>/`), linked as `https://github.com/{owner}/{repo}/blob/pr-evidence/pr-<N>/<file>.png`;
   - else local paths.
   When gating a stack, screenshots from one combined branch with all the PRs applied are fine; say so in the comment.
+- **Check the screens yourself.** Open every screenshot (the Read tool shows images) and judge it against the issue's acceptance criteria and the design: the change is there and does what the issue says, nothing else moved, no overlap, cut-off or missing text, no broken images, empty and error states where the change has them, and phone width when it applies. Each defect is a blocking finding with its screenshot. Record what you checked and what you found. Never hand a screenshot to the user to judge: the user decides product questions, not whether a screen looks right.
 - Evidence is what you ran and saw. Never write "tests pass" without the command and its output.
 
 ## 3. Fresh-context review
@@ -62,7 +63,7 @@ Start at the floor (step 1), then raise it if judgement says so:
 | Tier | What it covers | Who merges |
 |---|---|---|
 | **low** | Docs, comments, tests only, user-visible wording that doesn't change layout or behaviour, generated files regenerated from an unchanged source | the agent, once steps 2-4 are clean |
-| **medium** | Ordinary screen and feature changes, engine logic outside sensitive paths | the user, after looking at the evidence and screenshots, not the code |
+| **medium** | Ordinary screen and feature changes, engine logic outside sensitive paths | the user, from the gate comment: what changed, what you checked (screens included) and any product decision; not the code |
 | **high** | Anything on the sensitive paths: sign-in/auth, storage, data or tenant isolation, CI workflows, container/deploy config, dependencies and lockfiles, calculation formulas and their defaults, and rule files such as CLAUDE.md and the sensitive-path list itself | the user, after the thorough review (step 3 plus `/code-review high`) |
 
 Raise the tier when:
@@ -80,7 +81,7 @@ When in doubt, go up one tier: a wrong "medium" costs the user a minute, and a w
 - Set exactly one label: remove other `risk:*` labels and add the new one.
 - Post **one** gate comment using [references/gate-comment.md](references/gate-comment.md). On a re-run, edit your earlier gate comment instead of adding a new one (find it by its first line `<!-- pr-gate -->`).
 - **low:** if checks, review and security review are clean and no thread is open, merge by the repo's convention (`gh pr merge N --squash --delete-branch` or `--rebase`; never `--admin`). Then rebase each stacked dependant: `git rebase --onto origin/<default> origin/<parent-branch> <branch>`, `git push --force-with-lease`, and re-run its gate if its diff changed. If `main`'s rules need an approval the agent can't give, don't bypass them. Tell the user "low risk, ready, no review needed: just merge".
-- **medium / high:** don't merge. Post one review comment at each of the one to three decision points: `gh api repos/{owner}/{repo}/pulls/N/comments -f commit_id=<head sha> -f path=<file> -F line=<n> -f body=...`, body starting `<!-- pr-gate look-here -->` and saying in one or two sentences what to judge there. Then put a `## Look here` section at the top of the PR body listing those points with permalinks (`https://github.com/{owner}/{repo}/blob/<head sha>/<path>#L<a>-L<b>`). On a re-run replace that section and delete your stale look-here comments. More than three points means the PR is too big: say so and suggest the cut instead of listing them all. Tell the user in plain words that the PR is ready, which tier, and the 1-3 things to look at, with links (screenshots for medium, the review summary for high).
+- **medium / high:** don't merge. Post one review comment at each of the one to three decision points: `gh api repos/{owner}/{repo}/pulls/N/comments -f commit_id=<head sha> -f path=<file> -F line=<n> -f body=...`, body starting `<!-- pr-gate look-here -->` and saying in one or two sentences what to judge there. Then put a `## Look here` section at the top of the PR body listing those points with permalinks (`https://github.com/{owner}/{repo}/blob/<head sha>/<path>#L<a>-L<b>`). On a re-run replace that section and delete your stale look-here comments. More than three points means the PR is too big: say so and suggest the cut instead of listing them all. Tell the user in plain words that the PR is ready, which tier, and the 1-3 things to look at, with links (the review summary, and for high the decision only a person can make). Look-here points are decisions, never "check this screen".
 - **Reverted:** when a merged PR is undone (a revert PR merges, or its squash commit is reverted on `main`), add the `reverted` label to the original PR so the counts in step 7 stay honest.
 - A GitHub approval from the agents' shared account proves nothing. If the repo relies on it, suggest a bot account or GitHub App for the agents, plus branch protection that requires the CI checks.
 
