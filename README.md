@@ -39,7 +39,7 @@ flowchart TD
     F -->|your lane| H[You: read the gate comment<br/>decide the 1-3 look-here points, merge]
     G --> I[Wave digest]
     H --> I
-    I -->|left out, recurring findings, questions| A
+    I -->|left out, questions, recurring findings as a new check first, a CLAUDE.md line only when no check can express it| A
 ```
 
 - **Design** is a conversation, not a skill here. End it when you can say what the user can do afterwards and how a test would prove it.
