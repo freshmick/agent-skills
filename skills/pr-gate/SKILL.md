@@ -51,7 +51,8 @@ One review pass. The scope of the change sets how many reviewers read it, whatev
 **Fresh-context review.** Spawn a reviewer subagent that didn't write the code and hasn't seen your reasoning. Give it read-only tools (Read, Grep, Glob, read-only git/gh). Give it the PR number, the diff range from step 1, the issue's acceptance criteria, the repo rules and the repo's `REVIEW.md` if there is one (what failure looks like in this repo, paths to skip, what counts as evidence), but not your opinion of the PR. Ask for blocking findings only:
 - a bug in the changed lines on an input the issue names, or on one that worked before the PR, with the concrete input that produces the wrong result or the error. An edge case the issue doesn't name is not a finding, even when it would fail: it goes under "Left out" in the report (in a wave, the digest) and the user decides;
 - an acceptance criterion the PR doesn't meet, or the test that proves it missing;
-- a security hole: injection, missing authorization, secrets, data loss.
+- a security hole: injection, missing authorization, secrets, data loss;
+- code the issue didn't ask for: a behaviour, option, abstraction or cleanup outside the acceptance criteria, named by file:line, with the criterion it doesn't serve. The fix is to remove it, not to review it.
 Nothing else: no style, naming or structure remarks, no "consider handling", no requests for more tests, no findings about code the PR didn't change. Each finding has file:line and the failure scenario.
 
 **Keep the PR the size it was.** A finding that isn't blocking by the list above is dropped: not a commit, not an issue, not a line in the gate comment.
