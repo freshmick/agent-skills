@@ -28,7 +28,7 @@ The core rules:
 - List the changed files and classify each one: docs, tests, user-visible text, UI behaviour/layout, engine/logic, sensitive (matches a sensitive path; this wins over every other class), generated (goldens, lockfiles, snapshots).
 - **Slice check.** Stop and send the PR back when it changes more than about 200 hand-written lines outside generated files or more than 8 files (the repo's instructions can set another cap; a batch of same-class docs or tests issues has the line cap only), when it closes more than one issue (a batch of same-class docs or tests issues is fine), or when its commits are layers that only work together (types, then templates, then engine, then commands). Label nothing. Comment once with the reason and a suggested cut into vertical slices, each working end to end on its own, and tell the user. Don't review it.
 - **Paths.** Note whether the PR touches any sensitive path, whether every changed file is docs, tests or regenerated, and any needs-ADR match.
-- **CI weakened.** Read the diff for a check step removed, a threshold lowered, an ignore or exclude list grown, a suppression or skip added (`# noqa`, `# type: ignore`, `eslint-disable`, `.skip`, `xfail`), an existing test deleted or its assertion changed when the issue did not ask for it. List each one with file:line.
+- **CI weakened.** Read the diff for a check step removed, a threshold lowered, an ignore or exclude list grown, a suppression or skip added (`# noqa`, `# type: ignore`, `eslint-disable`, `.skip`, `xfail`); an existing test deleted or its assertion changed, unless the issue asked for it. List each one with file:line.
 
 ## 2. Collect evidence
 Work in a worktree at the PR head, never the main checkout.
