@@ -1,6 +1,7 @@
 ---
 name: risk-paths
 description: Write a repo's `.claude/risk-paths.md`, the file pr-gate reads to decide which PRs an agent may merge and which go to a person. Sets the lane (`mvp` or `live`), finds candidate sensitive paths in the repo, confirms them with the user and opens the file as its own PR. Run once per repo, before the first wave, or when the lane or the sensitive paths change. Use when the user says "/risk-paths", "set up risk paths", "which paths are sensitive", or when ship-wave or pr-gate report that the repo has no `risk-paths.md`.
+license: MIT
 argument-hint: "[repo path; default: the current repo]"
 ---
 

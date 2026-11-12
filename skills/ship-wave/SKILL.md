@@ -1,6 +1,7 @@
 ---
 name: "ship-wave"
 description: Lead a wave of issues to merged PRs in any repo(s) with any tracker (Linear, GitHub Issues, Jira, or a plain list). Parallel sub-agents implement as draft PRs, pr-gate reviews, lanes and merges each one, PRs land in dependency order, and the tracker stays current. Use when the user says "/ship-wave", passes a handoff prompt, or asks to implement/kick off a set of issues.
+license: MIT
 argument-hint: "[issue IDs, project/milestone, or path to a handoff prompt]"
 ---
 
