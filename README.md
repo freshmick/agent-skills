@@ -25,9 +25,7 @@ The gate sends back any PR over about 200 hand-written lines or 8 files. To set 
 
 ```mermaid
 flowchart TD
-    R["/risk-paths<br/>once per repo: lane and sensitive paths"] -.-> D
-    A["/grill-me<br/>settle the design"]
-    A --> S["/to-spec<br/>write the design down as an issue"]
+    A["/grill-me<br/>settle the design"] --> S["/to-spec<br/>write the design down as an issue"]
     S --> B["/to-tickets<br/>cut it into small issues"]
     B --> C["/ship-wave<br/>agents build each issue as a PR"]
     C --> D["/pr-gate<br/>checks each PR, picks a lane, merges the agent lane"]
@@ -37,6 +35,8 @@ flowchart TD
     F --> G
     G -->|open questions, things left out| A
 ```
+
+The two once-per-repo steps, `/setup-matt-pocock-skills` and `/risk-paths`, run before the first wave and aren't part of this loop; see Install.
 
 **1. Settle the design with `/grill-me`.** It interviews you about what you want to build until the open questions are gone. Stop when you can say what a user will be able to do afterwards and how a test would prove it. `/grill-with-docs` does the same and also writes decision records and a glossary.
 
