@@ -26,7 +26,7 @@ The core rules:
 - `gh pr view N --json title,body,files,additions,deletions,baseRefName,headRefName,labels,commits,reviewDecision,statusCheckRollup`, plus the issue it closes.
 - **Stacked PRs:** if the body says "Builds on #M" or the base contains another PR's commits, gate only this PR's own commits (`git diff <parent-head>...<head>`). The parent gets its own gate. After the parent merges and this branch is rebased, check that the gated diff didn't change. If it did, gate again.
 - List the changed files and classify each one: docs, tests, user-visible text, UI behaviour/layout, engine/logic, sensitive (matches the sensitive paths), generated (goldens, lockfiles, snapshots).
-- **Slice check.** Stop and send the PR back when it changes more than about 300 lines outside generated files (the repo's instructions can set another limit), when it closes more than one issue (a batch of same-class low-tier issues is fine), or when its commits are layers that only work together (types, then templates, then engine, then commands). Label nothing. Comment once with the reason and a suggested cut into vertical slices, each working end to end on its own, and tell the user. Don't review it.
+- **Slice check.** Stop and send the PR back when it changes more than about 200 hand-written lines outside generated files or more than 8 files (the repo's instructions can set another cap), when it closes more than one issue (a batch of same-class low-tier issues is fine), or when its commits are layers that only work together (types, then templates, then engine, then commands). Label nothing. Comment once with the reason and a suggested cut into vertical slices, each working end to end on its own, and tell the user. Don't review it.
 - **Floor.** Each changed file takes the highest tier among the globs it matches, and a file matching none is medium. The floor is the highest tier of any file; low only when every file is low. Note any needs-ADR match.
 - **CI weakened.** Read the diff for a check step removed, a threshold lowered, an ignore or exclude list grown, a suppression or skip added (`# noqa`, `# type: ignore`, `eslint-disable`, `.skip`, `xfail`). List each one with file:line.
 
@@ -42,22 +42,24 @@ Work in a worktree at the PR head, never the main checkout.
 - **Check the screens yourself.** Open every screenshot (the Read tool shows images) and judge it against the issue's acceptance criteria and the design: the change is there and does what the issue says, nothing else moved, no overlap, cut-off or missing text, no broken images, empty and error states where the change has them, and phone width when it applies. Each defect is a blocking finding with its screenshot. Record what you checked and what you found. Never hand a screenshot to the user to judge: the user decides product questions, not whether a screen looks right.
 - Evidence is what you ran and saw. Never write "tests pass" without the command and its output.
 
-## 3. Fresh-context review
-Spawn a reviewer subagent that didn't write the code and hasn't seen your reasoning. Give it read-only tools (Read, Grep, Glob, read-only git/gh). Give it the PR number, the diff range from step 1, the issue's acceptance criteria and the repo rules, but not your opinion of the PR. Ask for:
-- correctness bugs, missed acceptance criteria, security, data loss, error handling, missing tests for the risky path;
-- **skip style**: no naming or formatting nits unless they hide a bug;
-- each finding tagged **blocking**, **nit** or **follow-up**, with file:line and a concrete failure scenario.
+## 3. Review
+Depth follows the floor from step 1. If step 5 raises the tier, run what the new tier needs before step 6.
+- **low:** no reviewer. Read the diff yourself and confirm it does only what a low file may do (docs, tests, wording, regenerated files). Anything else raises the tier to medium.
+- **medium:** the fresh-context review below.
+- **high:** the fresh-context review, then `/security-review` (step 4) and `/code-review high <PR>` via the code-review skill. Never launch `/code-review ultra` yourself: it is costly and user-triggered.
 
-For tier high, run `/code-review high <PR>` (via the code-review skill) as well. Never launch `/code-review ultra` yourself: it is costly and user-triggered.
+**Fresh-context review.** Spawn a reviewer subagent that didn't write the code and hasn't seen your reasoning. Give it read-only tools (Read, Grep, Glob, read-only git/gh). Give it the PR number, the diff range from step 1, the issue's acceptance criteria, the repo rules and the repo's `REVIEW.md` if there is one (what failure looks like in this repo, paths to skip, what counts as evidence), but not your opinion of the PR. Ask for blocking findings only:
+- a bug in the changed lines, with the concrete input that produces the wrong result or the error;
+- an acceptance criterion the PR doesn't meet, or the test that proves it missing;
+- a security hole: injection, missing authorization, secrets, data loss.
+Nothing else: no style, naming or structure remarks, no "consider handling", no requests for more tests, no findings about code the PR didn't change. Each finding has file:line and the failure scenario.
 
-**Small PRs** (under about 50 changed lines outside generated files): this review is the only one, whatever the tier. No `/code-review high` and no separate `/security-review` (step 4); the reviewer's list above already covers security.
+**Keep the PR the size it was.** A finding that isn't blocking by the list above is dropped: not a commit, not an issue, not a line in the gate comment.
 
-**Keep the PR the size it was.** A finding is blocking only when it breaks the issue's acceptance criteria or is a bug in the lines this PR changed. Anything else never becomes a commit on this PR. File it as an issue only when it would break a normal repo for a real user; otherwise give it one line under Follow-ups in the gate comment and nothing more.
-
-Post blocking findings on the PR as review comments. Each must be fixed (with a test) or answered with a reason before the gate passes. Re-review only the changed lines. After three rounds, stop and take the open point to the user.
+**Verify before posting.** Each finding comes with its failure scenario; run it yourself in the PR worktree (the input, the request, the test) before it goes on the PR. A finding you can't reproduce is dropped, not posted as "possible". Then post the survivors as review comments. Each must be fixed (with a test) or answered with a reason before the gate passes. Re-review only the changed lines. Never re-raise a finding already answered with a reason on its thread; if the reason is wrong, reply on that thread. After three rounds, stop and take the open point to the user.
 
 ## 4. Security review
-Skip for small PRs (step 3). Otherwise run `/security-review` (the built-in skill) in the PR worktree against the PR's base. Any open finding blocks, whatever the tier. Record "security review: no findings" or the finding and how it was resolved.
+High tier only (step 3). Run `/security-review` (the built-in skill) in the PR worktree against the PR's base. Any open finding blocks. Record "security review: no findings" or the finding and how it was resolved.
 
 ## 5. Set the tier
 Start at the floor (step 1), then raise it if judgement says so:
@@ -66,12 +68,12 @@ Start at the floor (step 1), then raise it if judgement says so:
 |---|---|---|
 | **low** | Docs, comments, tests only, user-visible wording that doesn't change layout or behaviour, generated files regenerated from an unchanged source | the agent, once steps 2-4 are clean |
 | **medium** | Ordinary screen and feature changes, engine logic outside sensitive paths | the user, from the gate comment: what changed, what you checked (screens included) and any product decision; not the code |
-| **high** | Anything on the sensitive paths: sign-in/auth, storage, data or tenant isolation, CI workflows, container/deploy config, dependencies and lockfiles, calculation formulas and their defaults, and rule files such as CLAUDE.md and the sensitive-path list itself | the user, after the thorough review (step 3 plus `/code-review high`) |
+| **high** | Anything on the sensitive paths: sign-in/auth, storage, data or tenant isolation, CI workflows, container/deploy config, dependencies and lockfiles, calculation formulas and their defaults, and rule files such as CLAUDE.md and the sensitive-path list itself | the user, after the full review (step 3: fresh-context, security, `/code-review high`) |
 
 Raise the tier when:
 - a "low" PR changes behaviour as well as words;
 - a change alters a stored or API data shape (a field becomes optional, or a schema changes);
-- the change is hard to revert;
+- the change is hard to revert (the PR body says `Door: one-way`, or you find it is one);
 - the tests don't cover the risky path;
 - you can't say what the checks would miss;
 - step 1 found CI weakened: treat each finding as high unless the PR body explains it, and name it under "For you to look at";
