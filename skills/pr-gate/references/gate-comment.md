@@ -8,7 +8,7 @@ Plain words, for a reader who is not a programmer. Short: a small change gets a 
 
 **Why:** <one sentence: what the change touches and which rule set the lane>
 **Checks:** <GitHub checks green; `pytest` 81 passed; pre-commit clean>
-**Reviews:** <docs or tests only: diff read; ordinary: fresh-context, n blocking, fixed; sensitive: fresh-context, security: no findings, /code-review high: ...>
+**Reviews:** <docs or tests only: diff read; ordinary: fresh-context, n blocking, fixed; sensitive: two reviewers, n blocking, fixed; second reviewer: no findings>
 **Misses:** <the honest gap the checks don't cover, one line>
 **Revert:** <"revert the squash commit", or the extra step>
 **Look at:** <person's lane: the 1-3 decisions with permalinks, or "nothing to decide"; agent lane: omit>

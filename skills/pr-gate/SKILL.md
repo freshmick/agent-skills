@@ -1,6 +1,6 @@
 ---
 name: pr-gate
-description: Verify a pull request and send it down one of two lanes before anyone merges it. Sends back a PR that is not one vertical slice, collects evidence (checks with exit codes), checks every changed screen itself from screenshots, runs the reviews the repo's sensitive paths call for (a security review only for sensitive PRs), picks the lane from the repo's `lane:` setting and those paths, labels the PR and posts one gate comment. The agent merges agent-lane PRs itself; person's-lane PRs go to the user with 1-3 look-here points. Use whenever a PR is about to be handed over or merged, when the user says "/pr-gate", "gate this PR", "classify this PR", "is this PR safe to merge", or when /ship-wave reaches its gate or merge step.
+description: Verify a pull request and send it down one of two lanes before anyone merges it. Sends back a PR that is not one vertical slice, collects evidence (checks with exit codes), checks every changed screen itself from screenshots, runs one review pass with one or two fresh-context reviewers, set by the scope of the change, picks the lane from the repo's `lane:` setting and those paths, labels the PR and posts one gate comment. The agent merges agent-lane PRs itself; person's-lane PRs go to the user with 1-3 look-here points. Use whenever a PR is about to be handed over or merged, when the user says "/pr-gate", "gate this PR", "classify this PR", "is this PR safe to merge", or when /ship-wave reaches its gate or merge step.
 argument-hint: "[PR numbers or URLs; default: the current branch's PR]"
 ---
 
@@ -43,10 +43,10 @@ Work in a worktree at the PR head, never the main checkout.
 - Evidence is what you ran and saw. Never write "tests pass" without the command and its output.
 
 ## 3. Review
-Depth follows the sensitive paths from step 1, whatever the lane.
+One review pass. The scope of the change sets how many reviewers read it, whatever the lane.
 - **Docs or tests only** (every file docs, tests or regenerated from an unchanged source, none sensitive): no reviewer. Read the diff yourself and confirm it changes no behaviour. If it does, it is not docs or tests only: treat it as ordinary in steps 3 and 5.
-- **Ordinary (neither docs-or-tests only nor sensitive):** the fresh-context review below.
-- **Sensitive:** the fresh-context review, then `/security-review` (step 4) and `/code-review high <PR>` via the code-review skill. Never launch `/code-review ultra` yourself: it is costly and user-triggered.
+- **Ordinary (neither docs-or-tests only nor sensitive):** one fresh-context reviewer.
+- **Sensitive, a stored or API data shape change, or a one-way door:** two fresh-context reviewers, the second with the security lens (step 4). No other review tools: never `/code-review` or `/security-review` from the gate; `/code-review ultra` is the user's to launch.
 
 **Fresh-context review.** Spawn a reviewer subagent that didn't write the code and hasn't seen your reasoning. Give it read-only tools (Read, Grep, Glob, read-only git/gh). Give it the PR number, the diff range from step 1, the issue's acceptance criteria, the repo rules and the repo's `REVIEW.md` if there is one (what failure looks like in this repo, paths to skip, what counts as evidence), but not your opinion of the PR. Ask for blocking findings only:
 - a bug in the changed lines, with the concrete input that produces the wrong result or the error;
@@ -58,8 +58,8 @@ Nothing else: no style, naming or structure remarks, no "consider handling", no 
 
 **Verify before posting.** Each finding comes with its failure scenario; run it yourself in the PR worktree (the input, the request, the test) before it goes on the PR. A finding with nothing to run (a committed secret, a missing authorization check, a missing test) is confirmed by reading the lines it names. A finding you can't reproduce is dropped, not posted as "possible". Then post the survivors as review comments. Each must be fixed (with a test) or answered with a reason before the gate passes. Re-review only the changed lines. Never re-raise a finding already answered with a reason on its thread; if the reason is wrong, reply on that thread. After three rounds, stop and take the open point to the user.
 
-## 4. Security review
-Sensitive PRs only (step 3). Run `/security-review` (the built-in skill) in the PR worktree against the PR's base. Any open finding blocks. Record "security review: no findings" or the finding and how it was resolved.
+## 4. Second reviewer
+Sensitive PRs only (step 3). Spawn a second fresh-context reviewer with the same prompt and tools, told to look first for injection, missing authorization, secrets and data loss. Merge the two lists, drop duplicates, then verify and post as step 3 says. Record "second reviewer: no findings" or the finding and how it was resolved.
 
 ## 5. Pick the lane
 The repo setting (step 0) and the paths (step 1) set the lane:
