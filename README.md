@@ -6,12 +6,18 @@ The idea: you settle the design in a conversation, an agent cuts it into small i
 
 ## Install
 
-Each skill is a folder with a `SKILL.md`. Copy a folder to where you want it:
+This repo holds two skills, `ship-wave` and `pr-gate`. Each is a folder with a `SKILL.md`. Copy both to where you want them:
 
-- `~/.claude/skills/` to have it in every project
-- `<repo>/.claude/skills/` to have it in one repo
+- `~/.claude/skills/` to have them in every project
+- `<repo>/.claude/skills/` to have them in one repo
 
-`ship-wave` needs `pr-gate` and `pr` next to it, and `pr-gate` needs the GitHub CLI (`gh`). If the engineering plugin is installed, `ship-wave` also uses its `debug` and `deploy-checklist` skills. Then run `/setup-matt-pocock-skills` once in each repo. It asks which tracker you use, and the other skills read that.
+The rest of the flow is Matt Pocock's skills, installed as a plugin that updates itself:
+
+```
+claude plugin install mattpocock-skills@claude-plugins-official
+```
+
+`pr-gate` needs the GitHub CLI (`gh`). `ship-wave` needs `pr-gate` next to it and the `pr` skill from Matt's plugin; if the engineering plugin is installed, it also uses its `debug` and `deploy-checklist` skills. Then run `/setup-matt-pocock-skills` once in each repo. It asks which tracker you use, and the other skills read that.
 
 The gate sends back any PR over about 200 hand-written lines or 8 files. To set another cap, put one line in the repo's `CLAUDE.md`, for example `Slice cap: 300 lines, 10 files.` `to-tickets`, `ship-wave` and `pr-gate` all read it.
 
@@ -104,9 +110,9 @@ Run `/pr-gate` on its own only for a PR that didn't come from a wave: one you wr
 | `ship-wave` | Leads a batch of issues to merged PRs. One sub-agent per issue, draft PRs, pr-gate on each in dependency order, tracker updates, one digest at the end. |
 | `pr-gate` | Verifies a PR, picks its lane and merges the agent lane. Collects evidence, runs the review, labels the PR, posts one gate comment and the look-here points, rebases what's stacked on a merged PR. |
 
-## Skills from Matt Pocock
+## Skills from Matt Pocock's plugin
 
-Copied unchanged from [mattpocock/skills](https://github.com/mattpocock/skills) under MIT. See [CREDITS.md](CREDITS.md).
+Not in this repo. They come from [mattpocock/skills](https://github.com/mattpocock/skills) via the plugin above; see [CREDITS.md](CREDITS.md). The ones the flow uses:
 
 | Skill | Use it for |
 |---|---|
@@ -129,4 +135,4 @@ Copied unchanged from [mattpocock/skills](https://github.com/mattpocock/skills) 
 
 Zip a skill folder (the folder itself at the zip root, no `__pycache__`), then upload it under Customize > Skills. To update one later: the skill > More options > Replace.
 
-Matt's skills carry a `disable-model-invocation` line in their `SKILL.md`. Remove it before uploading. claude.ai only accepts `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`.
+Matt's skills have to be zipped from [his repo](https://github.com/mattpocock/skills). They carry a `disable-model-invocation` line in their `SKILL.md`; remove it before uploading. claude.ai only accepts `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`.

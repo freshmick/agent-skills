@@ -8,7 +8,7 @@ argument-hint: "[issue IDs, project/milestone, or path to a handoff prompt]"
 
 You are the lead engineer. Issues are the spec; this skill is the rules. Input: `$ARGUMENTS` (issue IDs, a project/milestone, or a handoff prompt path). A handoff prompt overrides this skill where they conflict.
 
-`pr-gate` must be installed next to this skill: it owns review, lanes, rebase and merge. `pr` (the PR body) should be too. Two skills from the engineering plugin are optional: `debug` for a failing check or a bug found mid-issue, and `deploy-checklist` before a merge that deploys or migrates. Load one with the Skill tool when its step starts, and tell sub-agents which to load; the short checklist in that step is the fallback when it isn't installed.
+`pr-gate` must be installed next to this skill: it owns review, lanes, rebase and merge. `pr` from Matt Pocock's plugin writes the PR body. Two skills from the engineering plugin are optional: `debug` for a failing check or a bug found mid-issue, and `deploy-checklist` before a merge that deploys or migrates. Load one with the Skill tool when its step starts, and tell sub-agents which to load; the short checklist in that step is the fallback when it isn't installed.
 
 ## 0. Setup
 Settle these from, in priority order: the handoff prompt, `.claude/ship-wave.md`, the repos' CLAUDE.md/AGENTS.md (with the `docs/agents/issue-tracker.md` it points at, written by `/setup-matt-pocock-skills`) and CI config. Ask the user only for what's left.

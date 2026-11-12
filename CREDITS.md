@@ -2,25 +2,7 @@
 
 ## Matt Pocock: mattpocock/skills
 
-These skills are copied unchanged from [mattpocock/skills](https://github.com/mattpocock/skills) at commit `4ae2317`, under the MIT License ([licenses/mattpocock-skills.LICENSE](licenses/mattpocock-skills.LICENSE)). Copyright (c) 2026 Matt Pocock.
-
-| Skill | Upstream path |
-|---|---|
-| `grill-me` | `skills/productivity/grill-me` |
-| `grilling` | `skills/productivity/grilling` |
-| `grill-with-docs` | `skills/engineering/grill-with-docs` |
-| `domain-modeling` | `skills/engineering/domain-modeling` |
-| `to-tickets` | `skills/engineering/to-tickets` |
-| `setup-matt-pocock-skills` | `skills/engineering/setup-matt-pocock-skills` |
-| `prototype` | `skills/engineering/prototype` |
-| `improve-codebase-architecture` | `skills/engineering/improve-codebase-architecture` |
-| `codebase-design` | `skills/engineering/codebase-design` |
-| `wayfinder` | `skills/engineering/wayfinder` |
-| `research` | `skills/engineering/research` |
-| `to-spec` | `skills/engineering/to-spec` |
-| `pr` | `skills/engineering/pr` (its own CREDITS.md names Dex Horthy's `show-me`) |
-
-To update: clone the upstream repo, copy the same folders over these, and change the commit above.
+No files copied. The flow in the README runs his skills (`grill-me`, `grill-with-docs`, `to-spec`, `to-tickets`, `pr`, `setup-matt-pocock-skills` and the helpers they call) from his plugin, `mattpocock-skills@claude-plugins-official`, which updates itself. Source: [mattpocock/skills](https://github.com/mattpocock/skills), MIT License, copyright (c) 2026 Matt Pocock.
 
 ## Jesse Vincent: obra/superpowers
 
