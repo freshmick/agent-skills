@@ -31,8 +31,7 @@ flowchart TD
     A --> B["/to-tickets"]
     B --> C[One issue per vertical slice, blocking edges]
     C --> D["/ship-wave &lt;ids&gt;<br/>new repo: first issue is the walking skeleton"]
-    D -.->|new repo: after the skeleton merges| G1["/guardrails on the skeleton"]
-    G1 -.->|the wave goes on| D
+    D -.->|new repo: after the skeleton merges| G0
     D --> E[Sub-agent per issue<br/>own worktree, pin test first on untested code,<br/>self-review, size check, draft PR]
     E -->|over the cap| B
     E --> F["/pr-gate (run by ship-wave)"]
