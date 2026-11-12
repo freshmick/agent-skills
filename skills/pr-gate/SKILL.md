@@ -17,7 +17,7 @@ The core rules:
 
 ## 0. Setup (once per repo)
 - Read the repo's CLAUDE.md / AGENTS.md: the check commands, the merge convention (squash or rebase), branch rules, and where test servers may run.
-- Lane setting and paths: the repo's `.claude/risk-paths.md` if it has one, else [references/risk-paths-template.md](references/risk-paths-template.md). Its `lane: mvp` or `lane: live` line is the repo setting; no line, or no file, means `live`. Its `## sensitive` list (`## high` in older files) is the sensitive paths, and `## docs and tests` (`## low` in older files) the docs and tests. Say in the gate comment which file and setting you used.
+- Lane setting and paths: the repo's `.claude/risk-paths.md` if it has one, else [references/risk-paths-template.md](references/risk-paths-template.md). A line that is exactly `lane: mvp` or `lane: live` is the repo setting; no such line, or no file, means `live`. Its `## sensitive` list (`## high` in older files) is the sensitive paths, and `## docs and tests` (`## low` in older files) the docs and tests. In older files a file matching a `## medium` glob is never docs or tests. Say in the gate comment which file and setting you used.
 - Make sure the labels exist: `gh label create lane:agent --color 0e8a16`, `lane:person` `d93f0b`, `reverted` `b60205` (with `--force` to make it safe to re-run).
 - Read `main`'s protection (`gh api repos/{owner}/{repo}/rulesets` and branch protection). If a merge needs an approving review the agent cannot give, you cannot merge even agent-lane PRs: hand them over as "agent lane, no look needed" (step 6). On GitHub Free a private repo has no branch protection or rulesets, so nothing but this gate enforces the lanes; say so once in the gate comment.
 - Identity: if `AGENT_GITHUB_LOGIN` is set (the agents' machine user), check that `gh api user -q .login` and the PR's commit authors (`gh pr view N --json commits -q '.commits[].authors[].login'`) match it. A mismatch goes in the gate comment and means you hand agent-lane PRs to the user instead of merging. If it is not set, the gate comment says the gate ran as the user's own account. Never stop for either case.
@@ -44,7 +44,7 @@ Work in a worktree at the PR head, never the main checkout.
 
 ## 3. Review
 Depth follows the sensitive paths from step 1, whatever the lane.
-- **Docs or tests only:** no reviewer. Read the diff yourself and confirm it changes only docs, tests or regenerated files. Anything else gets the fresh-context review.
+- **Docs or tests only** (every file docs, tests or regenerated from an unchanged source, none sensitive): no reviewer. Read the diff yourself and confirm it changes no behaviour. If it does, it is not docs or tests only: treat it as ordinary in steps 3 and 5.
 - **Ordinary (neither docs-or-tests only nor sensitive):** the fresh-context review below.
 - **Sensitive:** the fresh-context review, then `/security-review` (step 4) and `/code-review high <PR>` via the code-review skill. Never launch `/code-review ultra` yourself: it is costly and user-triggered.
 
@@ -67,12 +67,12 @@ The repo setting (step 0) and the paths (step 1) set the lane:
 | Setting | Agent lane: the agent merges | Person's lane: the user merges |
 |---|---|---|
 | `mvp` | every other PR | PRs touching a sensitive path, or marked `Door: one-way` (in the body, or you find it is one) |
-| `live` | docs, tests and regenerated files only | every other PR |
+| `live` | docs or tests only PRs (step 3) | every other PR |
 
-A PR goes to the person's lane whatever the setting when step 1 found CI weakened and the PR body doesn't explain it (name each finding under "Look at"), or when a needs-ADR path changed and the PR carries no ADR (a `docs/adr/*.md` file in the diff or linked from the body; ask for it). Your judgement may also move a PR to the person's lane, for example a stored or API data shape change, or a risky path the tests miss; never the other way. When in doubt, the person's lane: a wrong call there costs the user a minute, and a wrong agent merge ships a bug unseen.
+A PR goes to the person's lane whatever the setting when it is a one-way door, when step 1 found CI weakened and the PR body doesn't explain it (name each finding under "Look at"), or when a needs-ADR path changed and the PR carries no ADR (a `docs/adr/*.md` file in the diff or linked from the body; ask for it). Your judgement may also move a PR to the person's lane, for example a stored or API data shape change, or a risky path the tests miss; never the other way. When in doubt, the person's lane: a wrong call there costs the user a minute, and a wrong agent merge ships a bug unseen.
 
 ## 6. Label, comment, merge
-- Set exactly one lane label: `lane:agent` or `lane:person`, removing the other.
+- Set exactly one lane label: `lane:agent` or `lane:person`, removing the other and any old `risk:*` label.
 - Post **one** gate comment using [references/gate-comment.md](references/gate-comment.md). On a re-run, edit your earlier gate comment instead of adding a new one (find it by its first line `<!-- pr-gate -->`).
 - **No re-gate** after a clean merge of the base into the PR that leaves the PR's own diff unchanged; the earlier gate stands once CI is green again.
 - **Agent lane:** if checks, screens and the reviews step 3 called for are clean and no thread is open, merge by the repo's convention (`gh pr merge N --squash --delete-branch` or `--rebase`; never `--admin`). Then rebase each stacked dependant: `git rebase --onto origin/<default> origin/<parent-branch> <branch>`, `git push --force-with-lease`, and re-run its gate if its diff changed. If `main`'s rules need an approval the agent can't give, don't bypass them. Tell the user "agent lane, ready, no review needed: just merge".
