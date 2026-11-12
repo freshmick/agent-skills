@@ -29,9 +29,8 @@ flowchart TD
     X[Existing repo] --> G0["/guardrails (agent-guardrails)<br/>checks, risk paths, baseline, CLAUDE.md check"]
     G0 --> A["/grill-me or /grill-with-docs<br/>settle the design, ADRs, glossary"]
     A --> B["/to-tickets"]
-    B --> C[One issue per vertical slice, blocking edges]
-    C --> D["/ship-wave &lt;ids&gt;<br/>new repo: first issue is the walking skeleton"]
-    D -.->|new repo: after the skeleton merges| G0
+    B --> C[One issue per vertical slice, blocking edges<br/>new repo: walking skeleton first]
+    C --> D["/ship-wave &lt;ids&gt;"]
     D --> E[Sub-agent per issue<br/>own worktree, pin test first on untested code,<br/>self-review, size check, draft PR]
     E -->|over the cap| B
     E --> F["/pr-gate (run by ship-wave)"]
@@ -47,7 +46,7 @@ flowchart TD
 - **`/guardrails`** first on an existing repo, so checks and the risk paths are in place before agents change code. A new repo runs it once the walking skeleton has merged.
 - **`/grill-me`** or **`/grill-with-docs`** to settle the design. End it when you can say what the user can do afterwards and how a test would prove it.
 - **`/to-tickets`** when the design is agreed and implementation is next. Run it again when ship-wave or pr-gate sends an issue back as too big or not a slice.
-- **`/ship-wave`** with the issue ids to-tickets published, blockers first. It runs pr-gate itself; you don't call pr-gate during a wave.
+- **`/ship-wave`** with the issue ids to-tickets printed. It runs pr-gate itself; you don't call pr-gate during a wave.
 - **`/pr-gate`** on its own only for a PR that didn't come from a wave: a hand-written PR, or one from another tool.
 - **You** read the digest and the gate comments of PRs in your lane. Not the diffs: the gate's look-here points are the decisions, and the evidence section says what was run and seen.
 
