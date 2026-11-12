@@ -17,6 +17,8 @@ The rest of the flow is Matt Pocock's skills, installed as a plugin that updates
 claude plugin install mattpocock-skills@claude-plugins-official
 ```
 
+For an existing repo you also want `/guardrails`, a skill from a separate repo, [freshmick/agent-guardrails](https://github.com/freshmick/agent-guardrails). It writes the checks, the sensitive-paths list the gate reads and a baseline. Install it the way that repo's README says (copy its `skills/guardrails` folder next to these two).
+
 `pr-gate` needs the GitHub CLI (`gh`). `ship-wave` needs `pr-gate` next to it and the `pr` skill from Matt's plugin; if the engineering plugin is installed, it also uses its `debug` and `deploy-checklist` skills. Then run `/setup-matt-pocock-skills` once in each repo. It asks which tracker you use, and the other skills read that.
 
 The gate sends back any PR over about 200 hand-written lines or 8 files. To set another cap, put one line in the repo's `CLAUDE.md`, for example `Slice cap: 300 lines, 10 files.` `to-tickets`, `ship-wave` and `pr-gate` all read it.
@@ -25,7 +27,7 @@ The gate sends back any PR over about 200 hand-written lines or 8 files. To set 
 
 ```mermaid
 flowchart TD
-    X[Existing repo] --> G0["/guardrails<br/>checks, sensitive paths, baseline"]
+    X[Existing repo] --> G0["/guardrails (agent-guardrails repo)<br/>checks, sensitive paths, baseline"]
     G0 --> A
     N[New repo] --> A["/grill-me<br/>settle the design"]
     A --> S["/to-spec<br/>write the design down as an issue"]
@@ -97,7 +99,7 @@ What each section does:
 - **`needs-adr`** lists paths whose change needs a decision record. A PR that touches one without a `docs/adr/*.md` file goes to your lane and the gate asks for the ADR.
 - **`docs and tests`** lists what counts as a docs-or-tests-only change. A PR is in that bucket only when every changed file matches here and nothing behaves differently.
 
-Start by copying the template and replacing the example globs under `sensitive` with your repo's real paths. If you use [agent-guardrails](https://github.com/freshmick/agent-guardrails), `/guardrails` writes a first version for you.
+Start by copying the template and replacing the example globs under `sensitive` with your repo's real paths. `/guardrails`, from the separate [agent-guardrails](https://github.com/freshmick/agent-guardrails) repo, writes a first version for you.
 
 **6. Read the digest and the "look here" comments in your lane.** The look-here points are the decisions. The gate comment's evidence section says what was run and what was seen.
 
@@ -129,7 +131,7 @@ Not in this repo. They come from [mattpocock/skills](https://github.com/mattpoco
 
 ## Related
 
-**Existing repo?** Run [`/guardrails`](https://github.com/freshmick/agent-guardrails) before anything else: the gate's sensitive paths come from it. It sets up checks, the sensitive-paths list and a baseline so agents don't change code in a repo with no safety net. In a new repo, run it once the walking skeleton has merged.
+**Existing repo?** Run `/guardrails` before anything else: the gate's sensitive paths come from it. It lives in its own repo, [freshmick/agent-guardrails](https://github.com/freshmick/agent-guardrails), with a CLI behind it; see the Install section. It sets up checks, the sensitive-paths list and a baseline so agents don't change code in a repo with no safety net. In a new repo, run it once the walking skeleton has merged.
 
 ## Using the skills on claude.ai
 
