@@ -36,7 +36,9 @@ flowchart TD
     G -->|open questions, things left out| A
 ```
 
-The two once-per-repo steps, `/setup-matt-pocock-skills` and `/risk-paths`, run before the first wave and aren't part of this loop; see Install.
+> **Before the first wave, run two things once in each repo:**
+> 1. `/setup-matt-pocock-skills` to say which tracker you use.
+> 2. `/risk-paths` to say which paths are sensitive. Without it the gate sends everything but docs and tests to you.
 
 **1. Settle the design with `/grill-me`.** It interviews you about what you want to build until the open questions are gone. Stop when you can say what a user will be able to do afterwards and how a test would prove it. `/grill-with-docs` does the same and also writes decision records and a glossary.
 
