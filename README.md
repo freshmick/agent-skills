@@ -8,6 +8,20 @@ Skills for coding agents that take work from an agreed design to merged PRs (Cla
 | `ship-wave` | Leads a batch of issues to merged PRs: one sub-agent per issue in its own worktree, draft PRs, pr-gate on each, at most 3 PRs waiting on the person at once, merge in dependency order, tracker updates, one digest for the person. | `pr-gate` |
 | `pr-gate` | Verifies a PR and gives it a risk tier. Sends back a PR that is not one vertical slice; collects evidence, runs a fresh-context review and a security review, sets the floor from the repo's `.claude/risk-paths.md` (or the default list in `references/`), labels the PR, posts one gate comment and merges only low-tier PRs itself. Review depth follows the tier; reviews report blocking findings only, and agents file no issues. | `gh` |
 
+**From [mattpocock/skills](https://github.com/mattpocock/skills)** (MIT, copied unchanged, see [CREDITS.md](CREDITS.md)). Run `/setup-matt-pocock-skills` once per repo first: it records the tracker and labels the others use.
+
+| Skill | Use it for |
+|---|---|
+| `grill-me`, `grill-with-docs` | Interviewing you about a plan until it's settled; `grill-with-docs` also writes ADRs and a glossary (`domain-modeling`). |
+| `to-tickets` | Cutting a plan into vertical-slice tickets with blocking edges. |
+| `prototype` | A throwaway prototype to settle a UI or state question. |
+| `improve-codebase-architecture` | Finding the worst tangles in a messy codebase (`codebase-design`). |
+| `wayfinder` | Work bigger than one session, as a map of decision tickets. |
+
+The `guardrails` skill (onboarding an existing repo) lives with its CLI in [agent-guardrails](https://github.com/freshmick/agent-guardrails).
+
+To upload to claude.ai, drop the `disable-model-invocation` line from Matt's `SKILL.md` files first: claude.ai accepts only `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`.
+
 ## When to use which
 
 ```mermaid
