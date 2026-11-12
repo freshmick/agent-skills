@@ -134,3 +134,7 @@ Not in this repo. They come from [mattpocock/skills](https://github.com/mattpoco
 Zip a skill folder (the folder itself at the zip root, no `__pycache__`), then upload it under Customize > Skills. To update one later: the skill > More options > Replace.
 
 Matt's skills have to be zipped from [his repo](https://github.com/mattpocock/skills). They carry a `disable-model-invocation` line in their `SKILL.md`; remove it before uploading. claude.ai only accepts `name`, `description`, `license`, `compatibility`, `metadata` and `allowed-tools`.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Matt Pocock's skills are his, under their own MIT license; see [CREDITS.md](CREDITS.md).

@@ -1,6 +1,7 @@
 ---
 name: pr-gate
 description: Verify a pull request and send it down one of two lanes before anyone merges it. Sends back a PR that is not one vertical slice, collects evidence (checks with exit codes), checks every changed screen itself from screenshots, runs one review pass with one or two fresh-context reviewers, set by the scope of the change, picks the lane from the repo's `lane:` setting and those paths, labels the PR and posts one gate comment. The agent merges agent-lane PRs itself; person's-lane PRs go to the user with 1-3 look-here points. Use whenever a PR is about to be handed over or merged, when the user says "/pr-gate", "gate this PR", "classify this PR", "is this PR safe to merge", or when /ship-wave reaches its gate or merge step.
+license: MIT
 argument-hint: "[PR numbers or URLs; default: the current branch's PR]"
 ---
 
