@@ -1,6 +1,6 @@
 # Risk paths template
 
-A repo may keep its own list at `.claude/risk-paths.md`, written by hand or by a tool. It sets the repo's lane setting and the paths that decide each PR's lane and review depth. When a repo has none, the gate uses this template with `lane: live`: its generic globs work in any repo and the example globs match nothing.
+A repo may keep its own list at `.claude/risk-paths.md`, written by hand or with the user by the `risk-paths` skill. It sets the repo's lane setting and the paths that decide each PR's lane and review depth. When a repo has none, the gate uses this template with `lane: live`: its generic globs work in any repo and the example globs match nothing.
 
 ```markdown
 # Risk paths (read by the pr-gate skill)

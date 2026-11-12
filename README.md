@@ -6,7 +6,7 @@ The idea: you settle the design in a conversation, an agent cuts it into small i
 
 ## Install
 
-This repo holds two skills, `ship-wave` and `pr-gate`. Each is a folder with a `SKILL.md`. Copy both to where you want them:
+This repo holds three skills, `ship-wave`, `pr-gate` and `risk-paths`. Each is a folder with a `SKILL.md`. Copy them to where you want them:
 
 - `~/.claude/skills/` to have them in every project
 - `<repo>/.claude/skills/` to have them in one repo
@@ -17,9 +17,7 @@ The rest of the flow is Matt Pocock's skills, installed as a plugin that updates
 claude plugin install mattpocock-skills@claude-plugins-official
 ```
 
-For an existing repo you also want `/guardrails`, a skill from a separate repo, [freshmick/agent-guardrails](https://github.com/freshmick/agent-guardrails). It writes the checks, the sensitive-paths list the gate reads and a baseline. Install it the way that repo's README says (copy its `skills/guardrails` folder next to these two).
-
-`pr-gate` needs the GitHub CLI (`gh`). `ship-wave` needs `pr-gate` next to it and the `pr` skill from Matt's plugin; if the engineering plugin is installed, it also uses its `debug` and `deploy-checklist` skills. Then run `/setup-matt-pocock-skills` once in each repo. It asks which tracker you use, and the other skills read that.
+`pr-gate` needs the GitHub CLI (`gh`). `ship-wave` needs `pr-gate` next to it and the `pr` skill from Matt's plugin; if the engineering plugin is installed, it also uses its `debug` and `deploy-checklist` skills. Then run two things once in each repo: `/setup-matt-pocock-skills`, which asks which tracker you use, and `/risk-paths`, which asks which paths are sensitive and writes the file the gate reads. The other skills read both.
 
 The gate sends back any PR over about 200 hand-written lines or 8 files. To set another cap, put one line in the repo's `CLAUDE.md`, for example `Slice cap: 300 lines, 10 files.` `to-tickets`, `ship-wave` and `pr-gate` all read it.
 
@@ -27,9 +25,8 @@ The gate sends back any PR over about 200 hand-written lines or 8 files. To set 
 
 ```mermaid
 flowchart TD
-    X[Existing repo] --> G0["/guardrails (agent-guardrails repo)<br/>checks, sensitive paths, baseline"]
-    G0 --> A
-    N[New repo] --> A["/grill-me<br/>settle the design"]
+    R["/risk-paths<br/>once per repo: lane and sensitive paths"] -.-> D
+    A["/grill-me<br/>settle the design"]
     A --> S["/to-spec<br/>write the design down as an issue"]
     S --> B["/to-tickets<br/>cut it into small issues"]
     B --> C["/ship-wave<br/>agents build each issue as a PR"]
@@ -99,7 +96,7 @@ What each section does:
 - **`needs-adr`** lists paths whose change needs a decision record. A PR that touches one without a `docs/adr/*.md` file goes to your lane and the gate asks for the ADR.
 - **`docs and tests`** lists what counts as a docs-or-tests-only change. A PR is in that bucket only when every changed file matches here and nothing behaves differently.
 
-Start by copying the template and replacing the example globs under `sensitive` with your repo's real paths. `/guardrails`, from the separate [agent-guardrails](https://github.com/freshmick/agent-guardrails) repo, writes a first version for you.
+`/risk-paths` writes it with you: it asks for the lane, finds the candidate paths in the repo, asks what is missing and opens the file as its own PR. Or copy the template by hand and replace the example globs under `sensitive` with your repo's real paths. Until the file exists the gate uses the template with `lane: live`, so nothing but docs and tests merges without you.
 
 **6. Read the digest and the "look here" comments in your lane.** The look-here points are the decisions. The gate comment's evidence section says what was run and what was seen.
 
@@ -111,6 +108,7 @@ Run `/pr-gate` on its own only for a PR that didn't come from a wave: one you wr
 |---|---|
 | `ship-wave` | Leads a batch of issues to merged PRs. One sub-agent per issue, draft PRs, pr-gate on each in dependency order, tracker updates, one digest at the end. |
 | `pr-gate` | Verifies a PR, picks its lane and merges the agent lane. Collects evidence, runs the review, labels the PR, posts one gate comment and the look-here points, rebases what's stacked on a merged PR. |
+| `risk-paths` | Writes `.claude/risk-paths.md` with you, once per repo: the lane and the sensitive paths the gate reads. |
 
 ## Skills from Matt Pocock's plugin
 
@@ -128,10 +126,6 @@ Not in this repo. They come from [mattpocock/skills](https://github.com/mattpoco
 | `setup-matt-pocock-skills` | The one-time setup per repo: tracker and labels. |
 
 `grilling`, `domain-modeling`, `codebase-design`, `research` and `pr` (the PR body template `ship-wave` uses) are helpers the skills above call. You don't run them yourself.
-
-## Related
-
-**Existing repo?** Run `/guardrails` before anything else: the gate's sensitive paths come from it. It lives in its own repo, [freshmick/agent-guardrails](https://github.com/freshmick/agent-guardrails), with a CLI behind it; see the Install section. It sets up checks, the sensitive-paths list and a baseline so agents don't change code in a repo with no safety net. In a new repo, run it once the walking skeleton has merged.
 
 ## Using the skills on claude.ai
 
