@@ -9,7 +9,7 @@ lane: live
 
 Set the line above to mvp or live. With mvp (no real users) the agent merges every PR except those touching a sensitive path or marked `Door: one-way`. With live (real users, or someone else's repo) the agent merges docs, tests and regenerated files only. No line means live.
 
-One glob per bullet, in backticks, gitignore style (`**` crosses directories). A note may follow after ` - `. A file matching a sensitive glob is sensitive, even if it also matches a docs-and-tests glob. A PR is docs-and-tests only when every changed file matches a docs-and-tests glob or is regenerated from an unchanged source, and it changes no behaviour. The gate may move a PR to the person's lane, never to the agent lane. Older files name these sections `## high` and `## low`; the gate reads them the same way.
+One glob per bullet, in backticks, gitignore style (`**` crosses directories). A note may follow after ` - `. A file matching a sensitive glob is sensitive, even if it also matches a docs-and-tests glob. A PR is docs-and-tests only when every changed file matches a docs-and-tests glob or is regenerated from an unchanged source, and it changes no behaviour. The gate may move a PR to the person's lane, never to the agent lane.
 
 ## sensitive
 - `src/auth/**` - example: sign-in, tokens, sessions, permissions; replace with this repo's paths
