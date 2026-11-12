@@ -1,8 +1,58 @@
-# Agent skills
+# ship-wave
 
-Skills for Claude Code that take a piece of work from "we agree on the design" to "the PRs are merged", with you reading as little as possible along the way.
+**Settle the design. Agents ship the PRs. You read one to three lines per PR, not the diff.**
 
-The idea: you settle the design in a conversation, an agent cuts it into small issues, a team of agents builds each one as a PR, and a gate decides which PRs an agent can merge on its own and which ones need you. For the ones that need you, the gate tells you the one to three places where a human judgement is required. You don't read diffs.
+ship-wave is three skills for Claude Code. You agree on a design in one conversation. Agents cut it into small issues, build each one as its own PR in parallel, and a gate merges the safe ones itself. The rest come to you with the exact lines where a person has to decide something.
+
+## Why
+
+- Agents write PRs faster than you can review them. Reading every diff gives back the time they saved.
+- Merging without reading is how a bad migration or an auth hole ships.
+- Most PRs don't need you. The ones that do need one or two decisions from you, not 400 lines of reading.
+
+ship-wave sorts every PR into one of two lanes. In the agent lane, the gate merges once the checks are green and the review has nothing blocking. In your lane, you get the decision spelled out and a link to the lines. You choose per repo what goes where.
+
+## What you see
+
+A gate comment on a PR in your lane. This one is a made-up example from a shop app:
+
+> **Lane: person's** (repo setting `mvp`, head 3f9c2e1)
+>
+> **Why:** changes how refunds are paid back, and `src/billing/**` is a sensitive path, so it goes to you.
+>
+> **Checks:** GitHub checks green; `pnpm test` 214 passed; `pnpm lint` clean.
+>
+> **Reviews:** two fresh-context reviewers. 1 blocking (a refund could be larger than the original charge), fixed with a test. Second reviewer: no findings.
+>
+> **Misses:** nothing runs against the live payment provider; the sandbox stands in for it.
+>
+> **Revert:** revert the squash commit.
+>
+> **Look at:** `src/billing/refunds.ts` L41-L48. A refund larger than the charge is now rejected, not capped at the charge. Is that the rule you want?
+
+At the end of a wave you get one digest, and it's the only thing you have to read:
+
+> **Your lane**
+> - #212 Refunds: reject or cap a refund over the charge? (gate comment, refunds.ts L41)
+>
+> **Merged by the agent**
+> - #208 Order list paging · #209 Order detail page · #210 Empty order list text · #211 Order list tests
+>
+> **Left out:** #209's issue mentions CSV export, but its criteria don't. Your call whether it becomes an issue.
+>
+> **Recurring:** two PRs left `console.log` calls in. Proposed as the ESLint `no-console` rule, not a note to the agents.
+
+## Before you use it
+
+- **It runs in Claude Code, on GitHub.** The gate uses the GitHub CLI. The tracker can be Linear, GitHub Issues, Jira or a plain list.
+- **It doesn't design for you.** The flow starts once you can say what a user will be able to do and how a test would prove it.
+- **The default is careful.** With `lane: live`, only docs and tests merge on their own. Switch a repo to `lane: mvp` and ordinary code merges too, while sensitive paths still come to you.
+- **The lanes are rules the agent follows.** Branch protection that requires CI to pass is what makes them hard to get around. On a private repo on GitHub Free, there is none.
+
+## How it fits with other skills
+
+- **[Matt Pocock's skills](https://github.com/mattpocock/skills)** cover the start: the design interview, the spec and the tickets. ship-wave uses them as its first three steps.
+- **[Addy Osmani's agent-skills](https://github.com/addyosmani/agent-skills)** teach one agent how to do each engineering step well: spec, test, review, ship. ship-wave answers a different question: how many agents work at once, and which PRs need a person at all.
 
 ## Install
 
