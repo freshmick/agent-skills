@@ -1,6 +1,6 @@
 ---
 name: "ship-wave"
-description: Lead a wave of issues to merged PRs in any repo(s) with any tracker (Linear, GitHub Issues, Jira, or a plain list). Parallel sub-agents implement as draft PRs, pr-gate reviews and tiers each one, PRs merge in dependency order, and the tracker stays current. Use when the user says "/ship-wave", passes a handoff prompt, or asks to implement/kick off a set of issues.
+description: Lead a wave of issues to merged PRs in any repo(s) with any tracker (Linear, GitHub Issues, Jira, or a plain list). Parallel sub-agents implement as draft PRs, pr-gate reviews each one and picks its lane, PRs merge in dependency order, and the tracker stays current. Use when the user says "/ship-wave", passes a handoff prompt, or asks to implement/kick off a set of issues.
 argument-hint: "[issue IDs, project/milestone, or path to a handoff prompt]"
 ---
 
@@ -24,10 +24,10 @@ With no profile and repeat waves likely, offer to save one.
 
 ## 2. Plan
 - Order by blocking links and code dependencies; parallelize the rest, but serialize issues whose listed files overlap (and the usual shared files: styles, layouts, config, lockfiles).
-- Batch same-class low-tier issues (docs, tests, wording) into one PR per wave; the batch has the line cap but not the file cap. Everything else stays one issue, one PR. Split an issue only when it mixes a contract or sensitive change with ordinary code: that part gets its own PR. Before opening any PR, `gh pr list --search "<issue id>"` for one that already exists.
+- Batch same-class docs or tests issues into one PR per wave; the batch has the line cap but not the file cap. Everything else stays one issue, one PR. Split an issue only when it mixes a contract or sensitive change with ordinary code: that part gets its own PR. Before opening any PR, `gh pr list --search "<issue id>"` for one that already exists.
 - An issue over the size cap (about 200 hand-written lines outside generated files such as goldens, lockfiles and snapshots, across at most 8 files, unless the repo sets another), or one that works only once several layers change together, is not a slice. Don't slice it here: hold that issue, tell the user why and point them to `slice-work`. Start the others.
-- **At most 3 PRs wait on the user at once** (gated medium or high, not yet merged). Don't start an issue that would push past that; start it when one of them lands. Low PRs the agent merges don't count.
-- Work out each issue's floor the way pr-gate's step 1 does, over the files it will likely touch: the repo's `.claude/risk-paths.md`, else pr-gate's `references/risk-paths-template.md`. If an issue floors at high or needs an ADR, write a one-page proposal for it (plan-mode output is the format: what changes, which contract, architecture or sensitive paths, the options and a recommendation) and wait for the user's approval of that issue. Start the others right away.
+- **At most 3 PRs wait on the user at once** (gated into the person's lane, not yet merged). Don't start an issue that would push past that; start it when one of them lands. Agent-lane PRs don't count.
+- Work out each issue's likely lane the way pr-gate's steps 1 and 5 do, over the files it will likely touch: the repo's `.claude/risk-paths.md` (its `lane:` line; none means `live`), else pr-gate's `references/risk-paths-template.md`. If an issue touches a sensitive path or needs an ADR, write a one-page proposal for it (plan-mode output is the format: what changes, which contract, architecture or sensitive paths, the options and a recommendation) and wait for the user's approval of that issue. Start the others right away.
 - Tell the user the plan in a few lines, including which issues wait for a proposal.
 
 ## 3. Implement (one sub-agent per issue)
@@ -44,21 +44,21 @@ With no profile and repeat waves likely, offer to save one.
 - PR body: short enough to read in a minute. Closing keyword ("Fixes ABC-N"; "Part of" if partial), then a few bullets on what changed and why, the one command or test that proves the criterion, and one line `Door: two-way` (a revert undoes it) or `Door: one-way` (a migration, a deleted field, an external call) with the reason. No "Needs human" section (review is what a PR is for) and no check logs (the gate comment carries the evidence).
 
 ## 4. Gate
-- Once CI is green, run the `pr-gate` skill on the PR. It is the only review layer: it collects the evidence (checks, screenshots), runs the fresh-context and security reviews, posts look-here comments, sets the `risk:low|medium|high` label from the sensitive paths, and posts the gate comment. A PR it sends back as not one slice goes back to `slice-work`, not to more commits. Blocking findings go back to the implementer, who fixes or rebuts each on its thread; the gate's three-round cap applies.
+- Once CI is green, run the `pr-gate` skill on the PR. It is the only review layer: it collects the evidence (checks, screenshots), runs the reviews the sensitive paths call for, picks the lane, posts look-here comments and the gate comment. A PR it sends back as not one slice goes back to `slice-work`, not to more commits. Blocking findings go back to the implementer, who fixes or rebuts each on its thread; the gate's three-round cap applies.
 - Gate a stacked PR on its own commits, and re-gate it if a rebase changes its diff.
 - When the gate passes, `gh pr ready N`. A PR stays a draft until then.
 - Unresolved design disagreements go to the user.
-- If `pr-gate` isn't installed, follow its steps by hand: the tier floor comes from the sensitive paths, you may raise a tier but never lower it, and an agent's approval never counts as a person's.
+- If `pr-gate` isn't installed, follow its steps by hand: the lane comes from the `lane:` setting and the sensitive paths, you may move a PR to the person's lane but never the other way, and an agent's approval never counts as a person's.
 
 ## 5. Merge
-- Only with green CI (or recorded checks), all threads resolved and a pr-gate label, in dependency order, by the repo's convention (default `gh pr merge --squash --delete-branch`). Rebase dependents after each merge.
-- **Who merges is set by the tier:** you merge `risk:low` only. `risk:medium` and `risk:high` go to the user with the gate comment's "For you to look at". Never bypass branch rules (`--admin`). If the rules need an approval the agents can't give, hand low PRs over too, marked "no review needed".
+- Only with green CI (or recorded checks), all threads resolved and a pr-gate lane label, in dependency order, by the repo's convention (default `gh pr merge --squash --delete-branch`). Rebase dependents after each merge.
+- **Who merges is set by the lane:** you merge `lane:agent` only. `lane:person` PRs go to the user with the gate comment's "Look at". Never bypass branch rules (`--admin`). If the rules need an approval the agents can't give, hand agent-lane PRs over too, marked "no review needed".
 - Before merging a PR that triggers a production deploy or carries a migration or feature flag, run `deploy-checklist` for it and put the rollback triggers in the PR. Watch triggered deploys; if one fails or trips a rollback trigger, stop merging that repo, report severity, impact and status in a few lines, and leave rollback to the user unless the profile allows it.
-- Don't merge DO NOT MERGE or human-gated PRs, whatever their tier. A `needs-visual-review` PR (any visible UI or public content change) is at least medium, unless the gate finds that only wording changed. pr-gate checks its screens; hand it over with the gate's findings, never with screenshots for the user to judge.
+- Don't merge DO NOT MERGE or human-gated PRs, whatever their lane. pr-gate checks the screens of a `needs-visual-review` PR (any visible UI or public content change) itself; hand it over with the gate's findings, never with screenshots for the user to judge.
 
 ## 6. Tracker
 - Issues go to In Progress at start and Done on merge (unless automation does it), with a comment linking the PR.
 - Agents create no issues from reviews or implementation. Anything noticed outside a PR's criteria goes under "Left out" in the digest, one line each; the user decides what becomes an issue.
 
 ## 7. Wave digest
-The digest is the only thing the user has to read. PRs grouped by tier, highest first; per PR one line: number, title, what to judge, links to the gate comment and its evidence. Low PRs the agent merged get a line each with nothing to judge. Then: merged and reverted counts per tier (pr-gate's step 7) · Actions minutes the wave used, summed from each run's `gh api repos/{owner}/{repo}/actions/runs/<id>/timing` when available · what's open and why · what needs the user (human-gated steps, then questions, then decisions) · left out: one line each, for the user to turn into issues or drop · recurring findings: a finding the gate raised on two or more PRs this wave, with where it belongs instead (a lint rule, a hook, CLAUDE.md or REVIEW.md, or a skill), never as a comment on the next PR · whether the parent can close.
+The digest is the only thing the user has to read. PRs grouped by lane, person's lane first; per PR one line: number, title, what to judge, links to the gate comment and its evidence. Agent-lane PRs the agent merged get a line each with nothing to judge. Then: merged and reverted counts per lane (pr-gate's step 7) · Actions minutes the wave used, summed from each run's `gh api repos/{owner}/{repo}/actions/runs/<id>/timing` when available · what's open and why · what needs the user (human-gated steps, then questions, then decisions) · left out: one line each, for the user to turn into issues or drop · recurring findings: a finding the gate raised on two or more PRs this wave, with where it belongs instead (a lint rule, a hook, CLAUDE.md or REVIEW.md, or a skill), never as a comment on the next PR · whether the parent can close.
