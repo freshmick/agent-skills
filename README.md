@@ -12,11 +12,11 @@ Skills for coding agents that take work from an agreed design to merged PRs (Cla
 
 | Skill | Use it for |
 |---|---|
-| `grill-me`, `grill-with-docs` | Interviewing you about a plan until it's settled; `grill-with-docs` also writes ADRs and a glossary (`domain-modeling`). |
+| `grill-me`, `grill-with-docs` | Interviewing you about a plan until it's settled (both call `grilling`); `grill-with-docs` also writes ADRs and a glossary (`domain-modeling`). |
 | `to-tickets` | Cutting a plan into vertical-slice tickets with blocking edges. |
 | `prototype` | A throwaway prototype to settle a UI or state question. |
 | `improve-codebase-architecture` | Finding the worst tangles in a messy codebase (`codebase-design`). |
-| `wayfinder` | Work bigger than one session, as a map of decision tickets. |
+| `wayfinder` | Work bigger than one session, as a map of decision tickets (calls `research` for facts outside the repo). |
 
 The `guardrails` skill (onboarding an existing repo) lives with its CLI in [agent-guardrails](https://github.com/freshmick/agent-guardrails).
 

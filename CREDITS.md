@@ -7,6 +7,7 @@ These skills are copied unchanged from [mattpocock/skills](https://github.com/ma
 | Skill | Upstream path |
 |---|---|
 | `grill-me` | `skills/productivity/grill-me` |
+| `grilling` | `skills/productivity/grilling` |
 | `grill-with-docs` | `skills/engineering/grill-with-docs` |
 | `domain-modeling` | `skills/engineering/domain-modeling` |
 | `to-tickets` | `skills/engineering/to-tickets` |
@@ -15,6 +16,7 @@ These skills are copied unchanged from [mattpocock/skills](https://github.com/ma
 | `improve-codebase-architecture` | `skills/engineering/improve-codebase-architecture` |
 | `codebase-design` | `skills/engineering/codebase-design` |
 | `wayfinder` | `skills/engineering/wayfinder` |
+| `research` | `skills/engineering/research` |
 
 To update: clone the upstream repo, copy the same folders over these, and change the commit above.
 
