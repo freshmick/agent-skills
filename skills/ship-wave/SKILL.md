@@ -14,6 +14,7 @@ You are the lead engineer. Issues are the spec; this skill is the rules. Input: 
 ## 0. Setup
 Settle these from, in priority order: the handoff prompt, `.claude/ship-wave.md`, the repos' CLAUDE.md/AGENTS.md (with the `docs/agents/issue-tracker.md` it points at, written by `/setup-matt-pocock-skills`) and CI config. Ask the user only for what's left.
 - Tracker (Linear, GitHub Issues, Jira, none) · repos and code host · worktree root (default `<repo>/../worktrees/`) · checks CI runs · merge convention and what merges trigger · repo-specific rules, including the slice cap when the repo sets one.
+- How many PRs may wait on the user at once. It changes from wave to wave, so take it only from the handoff prompt; otherwise ask every wave, offering 3 (the default, for when the user is around) or no limit (for a wave left running overnight).
 - Identity, as pr-gate step 0: if `AGENT_GITHUB_LOGIN` is set (the agents' machine user), confirm `gh api user -q .login` matches it and that commits will carry it. If it is not set, say plainly in the plan message that this wave runs as the user's own GitHub account, then continue.
 
 With no `.claude/ship-wave.md` and repeat waves likely, offer to write one. With no `.claude/risk-paths.md`, say so once and suggest `/risk-paths`; the wave runs on pr-gate's template with `lane: live` until the file exists.
@@ -27,7 +28,7 @@ With no `.claude/ship-wave.md` and repeat waves likely, offer to write one. With
 - In a repo with no code yet, the first issue is a walking skeleton: the smallest code base that builds, runs one path end to end and passes CI. Everything else waits for it. Order the others by blocking links and code dependencies; parallelize the rest, but serialize issues whose listed files overlap (and the usual shared files: styles, layouts, config, lockfiles).
 - Batch same-class docs or tests issues into one PR per wave. Everything else stays one issue, one PR. Split an issue only when it mixes a contract or sensitive change with ordinary code: that part gets its own PR. Before opening any PR, `gh pr list --search "<issue id>"` for one that already exists.
 - An issue over pr-gate's slice cap (its step 1), or one that works only once several layers change together, is not a slice. Don't slice it here: hold that issue, tell the user why and point them to `to-tickets`. Start the others.
-- **At most 3 PRs wait on the user at once** (gated into the person's lane, not yet merged). Don't start an issue that would push past that; start it when one of them lands. Agent-lane PRs don't count.
+- **Respect the limit from setup on PRs waiting on the user** (gated into the person's lane, not yet merged). Don't start an issue that would push past it; start it when one of them lands. Agent-lane PRs don't count.
 - Work out each issue's likely lane the way pr-gate's steps 1 and 5 do, over the files it will likely touch. If an issue touches a sensitive path or needs an ADR, write a one-page proposal for it (what changes, which contract, architecture or sensitive paths, the options and a recommendation) and wait for the user's approval of that issue. Start the others right away.
 - Tell the user the plan in a few lines, including which issues wait for a proposal.
 

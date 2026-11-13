@@ -2,7 +2,7 @@
 
 **Settle the design. Agents ship the PRs. You read one to three lines per PR, not the diff.**
 
-ship-wave is three skills for Claude Code. You agree on a design in one conversation. Agents cut it into small issues, build each one as its own PR in parallel, and a gate merges the safe ones itself. The rest come to you with the exact lines where a person has to decide something.
+ship-wave is four skills for Claude Code. You agree on a design in one conversation. Agents cut it into small issues, build each one as its own PR in parallel, and a gate merges the safe ones itself. The rest come to you with the exact lines where a person has to decide something.
 
 ## Why
 
@@ -56,7 +56,7 @@ At the end of a wave you get one digest, and it's the only thing you have to rea
 
 ## Install
 
-This repo holds three skills, `ship-wave`, `pr-gate` and `risk-paths`. Each is a folder with a `SKILL.md`. Copy them to where you want them:
+This repo holds four skills, `ship-grill`, `ship-wave`, `pr-gate` and `risk-paths`. Each is a folder with a `SKILL.md`. Copy them to where you want them:
 
 - `~/.claude/skills/` to have them in every project
 - `<repo>/.claude/skills/` to have them in one repo
@@ -75,7 +75,7 @@ The gate sends back any PR over about 200 hand-written lines or 8 files. To set 
 
 ```mermaid
 flowchart TD
-    A["/grill-me<br/>settle the design"] --> S["/to-spec<br/>write the design down as an issue"]
+    A["/ship-grill<br/>settle the design"] --> S["/to-spec<br/>write the design down as an issue"]
     S --> B["/to-tickets<br/>cut it into small issues"]
     B --> C["/ship-wave<br/>agents build each issue as a PR"]
     C --> D["/pr-gate<br/>checks each PR, picks a lane, merges the agent lane"]
@@ -90,13 +90,13 @@ flowchart TD
 > 1. `/setup-matt-pocock-skills` to say which tracker you use.
 > 2. `/risk-paths` to say which paths are sensitive. Without it the gate sends everything but docs and tests to you.
 
-**1. Settle the design with `/grill-me`.** It interviews you about what you want to build until the open questions are gone. Stop when you can say what a user will be able to do afterwards and how a test would prove it. `/grill-with-docs` does the same and also writes decision records and a glossary.
+**1. Settle the design with `/ship-grill`.** This is Matt Pocock's `/grill-me` with one line added: it doesn't ask how to split the work into PRs, because `/to-tickets` decides that. It interviews you about what you want to build until the open questions are gone. Stop when you can say what a user will be able to do afterwards and how a test would prove it. `/ship-grill docs` is his `/grill-with-docs`, which also writes decision records and a glossary.
 
 **2. Write it down with `/to-spec`.** It turns the conversation into a spec issue on your tracker, with no further interview. Every later agent works from issues, not from this chat, so the design has to leave the chat.
 
 **3. Cut it into issues with `/to-tickets`.** Each issue is a sub-issue of the spec and one vertical slice: a small change that works end to end, not "the database part" and then "the UI part". Issues say which other issues they block. In a brand new repo the first issue is a walking skeleton, the smallest thing that builds, runs one path and passes CI.
 
-**4. Run `/ship-wave` with the issue ids.** One agent per issue, each in its own git worktree, each producing a draft PR. On code with no tests, the agent writes a test that pins the current behaviour before changing anything. Ship-wave keeps the tracker up to date, merges in dependency order, and never has more than three PRs waiting on you at once. When it's done you get one digest: what merged, what's open, what needs you, and anything that got left out.
+**4. Run `/ship-wave` with the issue ids.** One agent per issue, each in its own git worktree, each producing a draft PR. On code with no tests, the agent writes a test that pins the current behaviour before changing anything. Ship-wave keeps the tracker up to date, merges in dependency order, and asks how many PRs may wait on you at once: three by default, or no limit for a wave you leave running overnight. When it's done you get one digest: what merged, what's open, what needs you, and anything that got left out.
 
 **5. Every PR goes through `/pr-gate`.** Ship-wave runs this itself. The gate sends back a PR that isn't one slice, collects the evidence (check results, screenshots of changed screens), and runs a fresh-context review that reports only bugs, missed criteria and security holes. Then it picks a lane:
 
@@ -161,6 +161,7 @@ Run `/pr-gate` on its own only for a PR that didn't come from a wave: one you wr
 | `ship-wave` | Leads a batch of issues to merged PRs. One sub-agent per issue, draft PRs, pr-gate on each in dependency order, tracker updates, one digest at the end. |
 | `pr-gate` | Verifies a PR, picks its lane and merges the agent lane. Collects evidence, runs the review, labels the PR, posts one gate comment and the look-here points, rebases what's stacked on a merged PR. |
 | `risk-paths` | Writes `.claude/risk-paths.md` with you, once per repo: the lane and the sensitive paths the gate reads. |
+| `ship-grill` | Matt Pocock's `grill-me` (and `grill-with-docs` with `docs`), with one line added: leave splitting the work to `/to-tickets`. The interview is all his. |
 
 ## Skills from Matt Pocock's plugin
 
@@ -168,8 +169,8 @@ Not in this repo. They come from [mattpocock/skills](https://github.com/mattpoco
 
 | Skill | Use it for |
 |---|---|
-| `grill-me` | Being interviewed about a plan until it's settled. |
-| `grill-with-docs` | Same, plus decision records (ADRs) and a glossary. |
+| `grill-me` | Being interviewed about a plan until it's settled. `ship-grill` runs it with one line added. |
+| `grill-with-docs` | Same, plus decision records (ADRs) and a glossary. `ship-grill docs` runs it. |
 | `to-spec` | Writing the settled design down as a spec issue, no interview. |
 | `to-tickets` | Cutting a spec into issues for `ship-wave`. |
 | `prototype` | A throwaway prototype to settle a UI or state question. |
@@ -177,7 +178,7 @@ Not in this repo. They come from [mattpocock/skills](https://github.com/mattpoco
 | `wayfinder` | Work too big for one session, laid out as a map of decision tickets. |
 | `setup-matt-pocock-skills` | The one-time setup per repo: tracker and labels. |
 
-`grilling`, `domain-modeling`, `codebase-design`, `research` and `pr` (the PR body template `ship-wave` uses) are helpers the skills above call. You don't run them yourself.
+`grilling` and `domain-modeling` (which `ship-grill` calls), `codebase-design`, `research` and `pr` (the PR body template `ship-wave` uses) are helpers the skills above call. You don't run them yourself.
 
 ## Using the skills on claude.ai
 
